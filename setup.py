@@ -1,7 +1,8 @@
 #
 # -*- coding: utf-8 -*-
 #
-# codimension - graphics python two-way code editor and analyzer
+# cdm-pythonparser - python 2 content parser used in Codimension to provide
+# a structured view into python 2 files and character buffers
 # Copyright (C) 2010  Sergey Satskiy <sergey.satskiy@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
@@ -16,8 +17,6 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-#
-# $Id$
 #
 
 
@@ -49,7 +48,7 @@ setup( name = 'cdmpyparser',
        platforms = [ 'any' ],
        py_modules  = [ 'cdmbriefparser' ],
        ext_modules = [ Extension( '_cdmpyparser',
-                                  [ 'cdmpyparser.c'],
+                                  [ 'src/cdmpyparser.c'],
                                   extra_compile_args = [ '-Wno-unused', '-fomit-frame-pointer',
                                                          '-DCDM_PY_PARSER_VERSION="' + version + '"',
                                                          '-ffast-math',
