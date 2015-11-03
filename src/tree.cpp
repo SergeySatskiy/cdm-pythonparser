@@ -230,13 +230,13 @@ string  nodeTypeToString( int  nodeType  )
 
 void printTree( node *  n, int  level )
 {
-    for ( size_t k = 0; k < level * 2; ++k )
+    for ( int  k = 0; k < level * 2; ++k )
         cout << " ";
     cout << "Type: " << nodeTypeToString( n->n_type ) << " line: " << n->n_lineno << " col: " << n->n_col_offset;
     if ( n->n_str != NULL )
          cout << " str: " << n->n_str;
     cout << endl;
-    for ( size_t k = 0; k < n->n_nchildren; ++k )
+    for ( int  k = 0; k < n->n_nchildren; ++k )
         printTree( &(n->n_child[ k ]), level + 1 );
 }
 
@@ -249,7 +249,7 @@ int getTotalLines( node *  tree )
     if ( tree->n_type != file_input )
         tree = &(tree->n_child[ 0 ]);
 
-    for ( size_t k = 0; k < tree->n_nchildren; ++k )
+    for ( int  k = 0; k < tree->n_nchildren; ++k )
     {
         node *  child = &(tree->n_child[ k ]);
         if ( child->n_type == ENDMARKER )
