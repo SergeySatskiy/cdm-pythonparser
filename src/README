@@ -1,2 +1,14 @@
-This directory contains implementation of the Python parser used
-in Codimension.
+This directory contains implementation of the Python 2 parser used
+in Codimension IDE. The parser provides a structured information about
+what a Python file (or a character buffer) contains. The parser extracts
+the following items:
+- encoding
+- module docstring
+- global variables
+- imports
+- global and nested functions and their arguments, docstrings and decorators
+- classes, nested classes, base classes, docstrings and decorators
+- class attributes, class instance attributes, class methods, class method
+  arguments and their docstrings
+- decorator arguments
+
