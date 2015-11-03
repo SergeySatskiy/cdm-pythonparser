@@ -58,3 +58,6 @@ target/
 
 # Unit tests
 tests/*.out
+
+# Utility binaries
+src/tree
