@@ -1345,7 +1345,8 @@ void walk( node *                       tree,
 
 
 /* Calculates the line shifts in terms of absolute position */
-void calculateLineShifts( char *  buffer, int *  lineShifts )
+static void
+calculateLineShifts( const char * buffer, int * lineShifts )
 {
     int     absPos = 0;
     char    symbol;
