@@ -1,7 +1,5 @@
-
-#include <sys/stat.h>
-
 #include <Python.h>
+#include <sys/stat.h>
 #include <node.h>
 #include <grammar.h>
 #include <parsetok.h>
