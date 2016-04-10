@@ -21,13 +21,17 @@
 
 
 from distutils.core import setup, Extension
+import os
 
 long_description = """Fast and comprehensive Python language parser.
 Written as a part of the Codimension project, this parser
 aims at pulling the most data from Python sources while
 exceeding the speed of existing parsers."""
 
-version = 'trunk'
+try:
+	version = os.environ['CDM_PYPARSER_BUILD_VERSION']
+except KeyError:
+	version = 'trunk'
 
 setup( name = 'cdmpyparser',
        description = 'Codimension Python Parser',
