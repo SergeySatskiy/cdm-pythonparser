@@ -100,4 +100,3 @@ the Codimension's `cdmbriefparser` module.
 | Extracting classes and functions with the same names | N | Y |
 | Supported python version | ANY | Up to 2.7 (series 3 has not been tested) |
 | Time to process 11365 python files (python 2.7 distribution and some third party packages). | 2 min 37 sec | 24 sec |
-
