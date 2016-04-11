@@ -1,4 +1,4 @@
-# cdm-pythonparser [![Build Status](https://travis-ci.org/fukanchik/cdm-pythonparser.svg?branch=autobuild)](https://travis-ci.org/fukanchik/cdm-pythonparser)
+# cdm-pythonparser [![Build Status](https://travis-ci.org/SergeySatskiy/cdm-pythonparser.svg?branch=master)](https://travis-ci.org/SergeySatskiy/cdm-pythonparser)
 cdm-pythonparser project is a Python 2 extension module.
 It takes a file with a python code (or a character buffer), parses it and
 provides back what is found in the code: functions, classes, global variables etc.
