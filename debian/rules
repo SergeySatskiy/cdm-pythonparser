@@ -14,12 +14,12 @@ override_dh_auto_clean:
 
 
 override_dh_auto_build:
-	python setup.py build --force
+	CDM_PYPARSER_BUILD_VERSION=$(CDM_PYPARSER_BUILD_VERSION) python setup.py build --force
 
 
 
 override_dh_auto_install:
-	python setup.py install --force --root=debian/python-cdmpyparser --no-compile -O0 --install-layout=deb  
+	CDM_PYPARSER_BUILD_VERSION=$(CDM_PYPARSER_BUILD_VERSION) python setup.py install --force --root=debian/python-cdmpyparser --no-compile -O0 --install-layout=deb  
 
 
 
