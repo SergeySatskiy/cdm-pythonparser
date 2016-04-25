@@ -13,7 +13,7 @@ tar xzf ${project}_${version}.orig.tar.gz
 	sudo mk-build-deps -i --tool "apt-get -y"
 	rm -f *.deb
 	dch --force-bad-version --distribution unstable --package cdmpyparser --newversion ${version}-$(lsb_release -si)~$(lsb_release -sc) "new release"
-	debuild -us -uc
+	debuild --set-envvar CDM_PYPARSER_BUILD_VERSION="${version}" -us -uc
 )
 
 #mv -f *.deb ~/result/
