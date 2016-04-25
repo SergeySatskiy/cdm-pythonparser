@@ -29,7 +29,7 @@ speed of existing parsers.
 make
 
 %install
-python setup.py install --root=${RPM_BUILD_ROOT} --record=INSTALLED_FILES
+CDM_PYPARSER_BUILD_VERSION=${version} python setup.py install --root=${RPM_BUILD_ROOT} --record=INSTALLED_FILES
 
 %check
 make check
