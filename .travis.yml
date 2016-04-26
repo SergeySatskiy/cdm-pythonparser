@@ -1,15 +1,15 @@
 sudo: required
 
 services:
-    - docker
+  - docker
 
 language: python
 
 python:
-    - '2.7'
+  - '2.7'
 
 script:
-    - ./pkg/travis.sh
+  - ./pkg/travis.sh
 
 env:
   matrix:
@@ -25,7 +25,7 @@ notifications:
 deploy:
   provider: releases
   api_key: 
-    secure: jO7d9cHklX2k+eQXvX5v3ssmNWBhFPq4L+QkFQ21IZsc8boSp4LiEc6ZgvxClxf1Yvb1Pd84Xd71EbqB8hAW8Nu8e6Kb92Xdz+jmQU4kNBkNkvV5SGwkMnd100UupWH+6rGP0coWUDH535I+eUIDbCJcVua/5XgCXpeUGblo057OvNhCLkYitf0xy16OkSidERAoSakaAhr0AxMSpQm3OhzIUtIonyWuZGT4PST6uzQD07dGN9TLiNl39il5rz9LTm9kJ1iDGJ8mdN+I+9P/uTetuXLb4D8ON45Np3crk6bjWhTaz/sHS53Pjf/IVwe+msorQ4AjUia/ZiVmrKrFnZki+jzVo7VKaK1ip+RGImGWgY2J8fj4RIG3r9BNxtGEZkK/0Dkw6GVx461hyiVEi3wxSWUhgTXUI0oeK+/c0o2QQqEUvbIygB4j3IA5lNKxP3ASQ4Z6ETHDLWcX+DXnCy7xukYU9cCXTJbdGbAX4lZKtexjUQZReAv0KMXZY2HXPE6xV8ztSA1bOJoC+8kXgKBdO0EXo3MogwsoM9vCCgTvh2WY8smFDR1YA78f3tuYVwi1zl5OXRILdddy7PWiC+xSfxSCqY+rrItPnWH1RLqAxgUAMw33/IXgfQPqDDF6DaUirP5ZRUsEQUZKa92OlhDXXBO2iLNWh8AeMLZ42A0=
+    secure: IJXONPtTErAKyucYuklzIXxLSMYJIZ6zAK8uIE9teNeL8foI/YHz9AlFmqI4dWpRmEaa6jXs1oJe+SNq777ry+OoHrcOiJRFLo8Y52lnny0jbv3LiP8gmxUTumPhtYp3EclLGXd/oNHQa6jAcVEq2dg8P4vZ4pZOoy9VJPxI3/FR+2YmzACu2WtXQLhjfmL6kRs29WSGHgtr1fLXs0x6aVDIgtdlWFO4q/iuSz8chy5qGdVkTuN/3wQKZIXLNZ41ZGDbcBHWUGmVkdOq4YIb5tXdEUDrVuvIgSAzsWABin9/Feq4mX+NIh9WmmyueeToXMb1/8+WKKF8TgLxLjYGwH8QccCetcUShlReJK991sY0Lt+MtscqPAeh9zBYhN533/9xnPhR+ECd47yh9MPDNR4Vwge+r0KMod5cWojWxg8bGncSdI36pf5f1ObxpaXB16+s04t6g+xlbKHQYOcjLQkG1d1JzQCLSLoKmVP9W7HaWR+VqSmiaE8lsgEi1tOQhyFt1f+AHzt/LNL4KWINTXnVq3UnsnAxIwGVMk0FSYYnkhOlPRNqUVwoNGZy6pUXdtFsgZP7nuGCkUC/ggGsDbuwGH34igkGlf1bQzXKkjAB/mKOtncPFF2uhJQvb7TWrA/2F36svp2sD1oijGOTEZRhVr6LgjNA1WdXS5xpu9E=
   file_glob: true
   file:
     - ../out/*.rpm
@@ -34,4 +34,5 @@ deploy:
   on:
     tags: true
     all_branches: true
+    repo: SergeySatskiy/cdm-pythonparser
 
