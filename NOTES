@@ -1,0 +1,19 @@
+Notes on builds via travis
+
+This sequence of steps worked for me:
+- make sure your checkout is in sync with the master branch
+- make sure you have .travis.yml file
+- run 'travis setup releases --force'; it will:
+  - create a key in the repository
+  - update .travis.yml with a new encoded key
+  - make some changes in .travis.yml which you may not want to have
+  -- the 'upload file' question is left without an answer
+  -- I usually keep a copy of the original .travis.yml and take the only new key from the re-written one
+- make changes in the ChangeLog file
+- do 'git add ...'
+- do 'git commit ...'
+- do 'git tag vX.X.X'
+  -- v in front is important and the pattern should be followed precisely
+- do 'git push --tags'
+  -- at this moment travis notices the commit with a tag and will start bulding and deploying;
+     it is vitally important to have a tag together with a commit
