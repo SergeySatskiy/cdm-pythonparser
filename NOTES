@@ -17,3 +17,9 @@ This sequence of steps worked for me:
 - do 'git push --tags'
   -- at this moment travis notices the commit with a tag and will start bulding and deploying;
      it is vitally important to have a tag together with a commit
+
+It is also a good idea to merge the tag into the master branch:
+- do 'git fetch --tags origin'
+- do 'git merge vX.X.X'
+- do 'git push'
+
