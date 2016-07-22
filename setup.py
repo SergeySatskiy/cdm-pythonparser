@@ -29,7 +29,7 @@ aims at pulling the most data from Python sources while
 exceeding the speed of existing parsers."""
 
 try:
-	version = os.environ['CDM_PYPARSER_BUILD_VERSION']
+	version = os.environ['CDM_PROJECT_BUILD_VERSION']
 except KeyError:
 	version = 'trunk'
 

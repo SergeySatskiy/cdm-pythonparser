@@ -1,4 +1,4 @@
-%define name cdmpyparser
+%define name cdm-pythonparser
 %define release 1
 %define version %{getenv:version}
 
@@ -29,7 +29,7 @@ speed of existing parsers.
 make
 
 %install
-CDM_PYPARSER_BUILD_VERSION=${version} python setup.py install --root=${RPM_BUILD_ROOT} --record=INSTALLED_FILES
+CDM_PROJECT_BUILD_VERSION=${version} python setup.py install --root=${RPM_BUILD_ROOT} --record=INSTALLED_FILES
 
 %check
 make check

@@ -1,13 +1,11 @@
-Source: cdmpyparser
+Source: cdm-pythonparser
 Maintainer: Sergey Satskiy <sergey.satskiy@gmail.com>
 Section: python
 Priority: optional
-Build-Depends: python-all-dev (>= 2.6.6-3), debhelper (>= 7)
+Build-Depends: dh-python, python-all-dev (>= 2.6.6-3), debhelper (>= 7)
 Standards-Version: 3.9.5
 
-
-
-Package: python-cdmpyparser
+Package: cdm-pythonparser
 Architecture: any
 Depends: ${misc:Depends}, ${python:Depends}, ${shlibs:Depends}
 Description: Codimension Python Parser
@@ -15,6 +13,4 @@ Description: Codimension Python Parser
  Written as a part of the Codimension project, this parser
  aims at pulling the most data from Python sources while
  exceeding the speed of existing parsers.
-
-
 

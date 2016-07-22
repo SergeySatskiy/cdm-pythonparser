@@ -4,7 +4,7 @@ export projectfull="$1"
 export project="$2"
 export version="$3"
 
-export CDM_PYPARSER_BUILD_VERSION="$3"
+export CDM_PROJECT_BUILD_VERSION="$3"
 
 mkdir -p ~/rpmbuild/{BUILD,RPMS,SOURCES,SPECS,SRPMS}
 

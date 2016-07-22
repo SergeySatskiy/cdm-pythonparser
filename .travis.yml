@@ -34,5 +34,4 @@ deploy:
   on:
     tags: true
     all_branches: true
-    repo: SergeySatskiy/cdm-pythonparser
 

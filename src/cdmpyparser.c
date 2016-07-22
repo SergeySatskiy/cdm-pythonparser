@@ -32,7 +32,7 @@
 #include <string.h>
 
 #ifndef CDM_PY_PARSER_VERSION
-#define CDM_PY_PARSER_VERSION       "trunk"
+#error "Version must be specified"
 #endif
 
 #define MAX_DOTTED_NAME_LENGTH      512
