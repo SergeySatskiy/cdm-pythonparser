@@ -20,11 +20,12 @@
 .PHONY: all clean
 
 FLAGS=-Wall -O2 -ffast-math -fomit-frame-pointer
-PYTHON_INCLUDE=$(shell python -c 'import distutils.sysconfig; print distutils.sysconfig.get_python_inc()')
+PYTHON_INCLUDE=$(shell python-config --includes)
+PYTHON_LIBS=$(shell python-config --libs)
 
 all: cdmpyparser.c tree.cpp
 	cd .. && python setup.py build_ext --inplace
-	g++ ${FLAGS} -o tree  tree.cpp -I ${PYTHON_INCLUDE} -L/opt/python-2.7/lib/ -lpython2.7
+	g++ ${FLAGS} -o tree  tree.cpp ${PYTHON_INCLUDE} ${PYTHON_LIBS}
 
 clean:
 	rm -rf *.o core.* _cdmpyparser.so build/ tree
