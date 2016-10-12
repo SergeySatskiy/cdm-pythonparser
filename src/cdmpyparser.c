@@ -45,6 +45,14 @@
 extern grammar      _PyParser_Grammar;  /* From graminit.c */
 
 
+#if PY_MAJOR_VERSION == 3
+    #define PyInt_FromLong              PyLong_FromLong
+    #define PyString_FromString         PyUnicode_FromString
+    #define PyString_FromStringAndSize  PyUnicode_FromStringAndSize
+#endif
+
+
+
 /* Holds the currently analysed scope */
 enum Scope {
     GLOBAL_SCOPE,
