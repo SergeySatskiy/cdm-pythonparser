@@ -1,5 +1,7 @@
+
 #include <Python.h>
 #include <sys/stat.h>
+
 #include <node.h>
 #include <grammar.h>
 #include <parsetok.h>
@@ -84,14 +86,11 @@ string  nodeTypeToString( int  nodeType  )
         case funcdef:           return "funcdef";
         case parameters:        return "parameters";
         case varargslist:       return "varargslist";
-        case fpdef:             return "fpdef";
-        case fplist:            return "fplist";
         case stmt:              return "stmt";
         case simple_stmt:       return "simple_stmt";
         case small_stmt:        return "small_stmt";
         case expr_stmt:         return "expr_stmt";
         case augassign:         return "augassign";
-        case print_stmt:        return "print_stmt";
         case del_stmt:          return "del_stmt";
         case pass_stmt:         return "pass_stmt";
         case flow_stmt:         return "flow_stmt";
@@ -109,7 +108,6 @@ string  nodeTypeToString( int  nodeType  )
         case dotted_as_names:   return "dotted_as_names";
         case dotted_name:       return "dotted_name";
         case global_stmt:       return "global_stmt";
-        case exec_stmt:         return "exec_stmt";
         case assert_stmt:       return "assert_stmt";
         case compound_stmt:     return "compound_stmt";
         case if_stmt:           return "if_stmt";
@@ -120,9 +118,6 @@ string  nodeTypeToString( int  nodeType  )
         case with_item:         return "with_item";
         case except_clause:     return "except_clause";
         case suite:             return "suite";
-        case testlist_safe:     return "testlist_safe";
-        case old_test:          return "old_test";
-        case old_lambdef:       return "old_lambdef";
         case test:              return "test";
         case or_test:           return "or_test";
         case and_test:          return "and_test";
@@ -138,7 +133,6 @@ string  nodeTypeToString( int  nodeType  )
         case factor:            return "factor";
         case power:             return "power";
         case atom:              return "atom";
-        case listmaker:         return "listmaker";
         case testlist_comp:     return "testlist_comp";
         case lambdef:           return "lambdef";
         case trailer:           return "trailer";
@@ -151,15 +145,39 @@ string  nodeTypeToString( int  nodeType  )
         case classdef:          return "classdef";
         case arglist:           return "arglist";
         case argument:          return "argument";
-        case list_iter:         return "list_iter";
-        case list_for:          return "list_for";
-        case list_if:           return "list_if";
         case comp_iter:         return "comp_iter";
         case comp_for:          return "comp_for";
         case comp_if:           return "comp_if";
-        case testlist1:         return "testlist1";
         case encoding_decl:     return "encoding_decl";
         case yield_expr:        return "yield_expr";
+
+        #if PY_MAJOR_VERSION == 2
+        case fpdef:             return "fpdef";
+        case fplist:            return "fplist";
+        case print_stmt:        return "print_stmt";
+        case exec_stmt:         return "exec_stmt";
+        case testlist_safe:     return "testlist_safe";
+        case old_test:          return "old_test";
+        case old_lambdef:       return "old_lambdef";
+        case listmaker:         return "listmaker";
+        case list_iter:         return "list_iter";
+        case list_for:          return "list_for";
+        case list_if:           return "list_if";
+        case testlist1:         return "testlist1";
+        #else
+        case async_funcdef:     return "async_funcdef";
+        case typedargslist:     return "typedargslist";
+        case tfpdef:            return "tfpdef";
+        case vfpdef:            return "vfpdef";
+        case testlist_star_expr:return "testlist_star_expr";
+        case nonlocal_stmt:     return "nonlocal_stmt";
+        case async_stmt:        return "async_stmt";
+        case test_nocond:       return "test_nocond";
+        case lambdef_nocond:    return "lambdef_nocond";
+        case star_expr:         return "star_expr";
+        case atom_expr:         return "atom_expr";
+        case yield_arg:         return "yield_arg";
+        #endif
 
         case ENDMARKER:         return "ENDMARKER";
         case NAME:              return "NAME";
@@ -186,7 +204,6 @@ string  nodeTypeToString( int  nodeType  )
         case EQUAL:             return "EQUAL";
         case DOT:               return "DOT";
         case PERCENT:           return "PERCENT";
-        case BACKQUOTE:         return "BACKQUOTE";
         case LBRACE:            return "LBRACE";
         case RBRACE:            return "RBRACE";
         case EQEQUAL:           return "EQEQUAL";
@@ -216,6 +233,15 @@ string  nodeTypeToString( int  nodeType  )
         case ERRORTOKEN:        return "ERRORTOKEN";
         case N_TOKENS:          return "N_TOKENS";
 
+        #if PY_MAJOR_VERSION == 2
+        case BACKQUOTE:         return "BACKQUOTE";
+        #else
+        case ATEQUAL:           return "ATEQUAL";
+        case RARROW:            return "RARROW";
+        case ELLIPSIS:          return "ELLIPSIS";
+        case AWAIT:             return "AWAIT";
+        case ASYNC:             return "ASYNC";
+        #endif
         default:                break;
     }
 
@@ -226,15 +252,15 @@ string  nodeTypeToString( int  nodeType  )
 
 
 
-void printTree( node *  n, int  level )
+void printTree( node *  n, size_t  level )
 {
-    for ( int  k = 0; k < level * 2; ++k )
+    for ( size_t k = 0; k < level * 2; ++k )
         cout << " ";
     cout << "Type: " << nodeTypeToString( n->n_type ) << " line: " << n->n_lineno << " col: " << n->n_col_offset;
     if ( n->n_str != NULL )
          cout << " str: " << n->n_str;
     cout << endl;
-    for ( int  k = 0; k < n->n_nchildren; ++k )
+    for ( int k = 0; k < n->n_nchildren; ++k )
         printTree( &(n->n_child[ k ]), level + 1 );
 }
 
@@ -247,7 +273,7 @@ int getTotalLines( node *  tree )
     if ( tree->n_type != file_input )
         tree = &(tree->n_child[ 0 ]);
 
-    for ( int  k = 0; k < tree->n_nchildren; ++k )
+    for ( int k = 0; k < tree->n_nchildren; ++k )
     {
         node *  child = &(tree->n_child[ k ]);
         if ( child->n_type == ENDMARKER )
