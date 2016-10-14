@@ -22,7 +22,7 @@
     code parser """
 
 import _cdmpyparser
-from sys import maxint
+from sys import maxsize
 
 
 
@@ -37,7 +37,7 @@ def trim_docstring( docstring ):
     lines = docstring.expandtabs().splitlines()
 
     # Determine minimum indentation (first line doesn't count):
-    indent = maxint
+    indent = maxsize
     for line in lines[ 1: ]:
         stripped = line.lstrip()
         if stripped:
@@ -45,7 +45,7 @@ def trim_docstring( docstring ):
 
     # Remove indentation (first line is special):
     lines[ 0 ] = lines[ 0 ].strip()
-    if indent < maxint:
+    if indent < maxsize:
         index = 1
         for line in lines[ 1: ]:
             lines[ index ] = line[ indent: ].rstrip()

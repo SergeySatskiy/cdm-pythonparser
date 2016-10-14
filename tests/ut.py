@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 #
 # codimension - graphics python two-way code editor and analyzer
-# Copyright (C) 2010  Sergey Satskiy <sergey.satskiy@gmail.com>
+# Copyright (C) 2010-2016  Sergey Satskiy <sergey.satskiy@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -17,10 +17,10 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
-# $Id$
-#
 
 " Unit tests for the brief python parser "
+
+from __future__ import print_function
 
 import cdmbriefparser
 import unittest
@@ -31,11 +31,11 @@ def files_equal( name1, name2 ):
     " Compares two files. Returns True if their content matches "
 
     if not os.path.exists( name1 ):
-        print >> sys.stderr, "Cannot open " + name1
+        print( "Cannot open " + name1, file = sys.stderr )
         return False
 
     if not os.path.exists( name2 ):
-        print >> sys.stderr, "Cannot open " + name2
+        print( "Cannot open " + name2, file = sys.stderr )
         return False
 
     file1 = open( name1 )
@@ -311,7 +311,7 @@ class CDMBriefParserTest( unittest.TestCase ):
 
 # Run the unit tests
 if __name__ == '__main__':
-    print "Testing parser version: " + cdmbriefparser.getVersion()
-    print "Module location: " + cdmbriefparser.__file__
+    print( "Testing parser version: " + cdmbriefparser.getVersion() )
+    print( "Module location: " + cdmbriefparser.__file__ )
     unittest.main()
 
