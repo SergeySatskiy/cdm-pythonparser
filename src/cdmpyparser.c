@@ -1025,7 +1025,7 @@ processFuncDefinition( node *                       tree,
     node *          paramNode = findChildOfType( tree, parameters );
     assert( paramNode != NULL );
 
-    node *      argsNode = findChildOfType( paramNode, varargslist );
+    node *      argsNode = findChildOfType( paramNode, typedargslist );
     if ( argsNode != NULL )
     {
         /* The function has arguments */
@@ -1034,7 +1034,7 @@ processFuncDefinition( node *                       tree,
         while ( k < argsNode->n_nchildren )
         {
             child = & ( argsNode->n_child[ k ] );
-            if ( child->n_type == fpdef )
+            if ( child->n_type == tfpdef )
             {
                 if ( firstArg == 1 )
                 {
@@ -1138,8 +1138,8 @@ static void processAssign( node *              tree,
                  child->n_child[ 0 ].n_type == LSQB )
             {
                 node *      listNode = findChildOfType( child, testlist_comp );
-                if ( listNode == NULL )
-                    listNode = findChildOfType( child, listmaker );
+//                if ( listNode == NULL )
+//                    listNode = findChildOfType( child, listmaker );
                 if ( listNode != NULL )
                     processAssign( listNode, onVariable,
                                    objectsLevel, lineShifts );
@@ -1189,8 +1189,8 @@ static void processInstanceMember( node *                      tree,
                  child->n_child[ 0 ].n_type == LSQB )
             {
                 node *      listNode = findChildOfType( child, testlist_comp );
-                if ( listNode == NULL )
-                    listNode = findChildOfType( child, listmaker );
+//                if ( listNode == NULL )
+//                    listNode = findChildOfType( child, listmaker );
                 if ( listNode != NULL )
                     processInstanceMember( listNode, callbacks, firstArgName,
                                            objectsLevel, lineShifts );
