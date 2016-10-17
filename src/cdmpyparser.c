@@ -1050,7 +1050,8 @@ processFuncDefinition( node *                       tree,
             else if ( child->n_type == STAR )
             {
                 ++k;
-                node *      nameChild = & ( argsNode->n_child[ k ] );
+                node *      tfpdefChild = & ( argsNode->n_child[ k ] );
+                node *      nameChild = & ( tfpdefChild->n_child[ 0 ] );
                 int         nameLen = strlen( nameChild->n_str );
                 char        starName[ MAX_DOTTED_NAME_LENGTH ];
 
@@ -1061,7 +1062,8 @@ processFuncDefinition( node *                       tree,
             else if ( child->n_type == DOUBLESTAR )
             {
                 ++k;
-                node *      nameChild = & ( argsNode->n_child[ k ] );
+                node *      tfpdefChild = & ( argsNode->n_child[ k ] );
+                node *      nameChild = & ( tfpdefChild->n_child[ 0 ] );
                 int         nameLen = strlen( nameChild->n_str );
                 char        starName[ MAX_DOTTED_NAME_LENGTH ];
 
