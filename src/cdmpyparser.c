@@ -957,7 +957,7 @@ static void  processClassDefinition( node *                       tree,
                  objectsLevel );
 
     /* Collect inheritance list */
-    node *      listNode = findChildOfType( tree, testlist );
+    node *      listNode = findChildOfType( tree, arglist );
     if ( listNode != NULL )
     {
         node *      child;
@@ -965,7 +965,7 @@ static void  processClassDefinition( node *                       tree,
         for ( int  k = 0; k < n; ++k )
         {
             child = & ( listNode->n_child[ k ] );
-            if ( child->n_type == test )
+            if ( child->n_type == argument )
             {
                 char        buffer[ MAX_ARG_VAL_SIZE ];
                 int         length = 0;
