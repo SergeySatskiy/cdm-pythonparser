@@ -1120,7 +1120,8 @@ static void processAssign( node *              tree,
                            int *               lineShifts )
 {
     assert( tree->n_type == testlist ||
-            tree->n_type == testlist_comp );
+            tree->n_type == testlist_comp ||
+            tree->n_type == testlist_star_expr );
 
     node *      child;
     for ( int  k = 0; k < tree->n_nchildren; ++k )
@@ -1133,8 +1134,12 @@ static void processAssign( node *              tree,
             if ( child == NULL )
                 continue;
             /* trailer means it is usage, not the initialization */
-            if ( findChildOfType( powerNode, trailer ) != NULL )
-                continue;
+            node *      atomExprNode = findChildOfType( powerNode, atom_expr );
+            if ( atomExprNode != NULL )
+            {
+                if ( findChildOfType( atomExprNode, trailer ) != NULL )
+                    continue;
+            }
 
             if ( child->n_child[ 0 ].n_type == LPAR ||
                  child->n_child[ 0 ].n_type == LSQB )
@@ -1173,7 +1178,8 @@ static void processInstanceMember( node *                      tree,
         return;
 
     assert( tree->n_type == testlist ||
-            tree->n_type == testlist_comp );
+            tree->n_type == testlist_comp ||
+            tree->n_type == testlist_star_expr );
 
     node *      child;
     int         n = tree->n_nchildren;
@@ -1203,12 +1209,17 @@ static void processInstanceMember( node *                      tree,
              * the usage, not initialization */
             int         trailerCount = 0;
             node *      trailerNode = NULL;
-            for ( int  j = 0; j < powerNode->n_nchildren; ++j )
+            node *      atomExprNode = findChildOfType( powerNode, atom_expr );
+
+            if ( atomExprNode == NULL )
+                continue;
+
+            for ( int  j = 0; j < atomExprNode->n_nchildren; ++j )
             {
-                if ( powerNode->n_child[ j ].n_type == trailer )
+                if ( atomExprNode->n_child[ j ].n_type == trailer )
                 {
                     ++trailerCount;
-                    trailerNode = & ( powerNode->n_child[ j ] );
+                    trailerNode = & ( atomExprNode->n_child[ j ] );
                 }
             }
             if ( trailerCount != 1 )
@@ -1250,18 +1261,18 @@ static void processInstanceMember( node *                      tree,
 static node *  isAssignment( node *  tree )
 {
     assert( tree->n_type == stmt );
-    if ( tree->n_nchildren < 1 )                    return NULL;
+    if ( tree->n_nchildren < 1 )                            return NULL;
     tree = & ( tree->n_child[ 0 ] );
-    if ( tree->n_type != simple_stmt )              return NULL;
-    if ( tree->n_nchildren < 1 )                    return NULL;
+    if ( tree->n_type != simple_stmt )                      return NULL;
+    if ( tree->n_nchildren < 1 )                            return NULL;
     tree = & ( tree->n_child[ 0 ] );
-    if ( tree->n_type != small_stmt )               return NULL;
-    if ( tree->n_nchildren < 1 )                    return NULL;
+    if ( tree->n_type != small_stmt )                       return NULL;
+    if ( tree->n_nchildren < 1 )                            return NULL;
     tree = & ( tree->n_child[ 0 ] );
-    if ( tree->n_type != expr_stmt )                return NULL;
-    if ( tree->n_nchildren < 2 )                    return NULL;
-    if ( tree->n_child[ 0 ].n_type != testlist )    return NULL;
-    if ( tree->n_child[ 1 ].n_type != EQUAL )       return NULL;
+    if ( tree->n_type != expr_stmt )                        return NULL;
+    if ( tree->n_nchildren < 2 )                            return NULL;
+    if ( tree->n_child[ 0 ].n_type != testlist_star_expr )  return NULL;
+    if ( tree->n_child[ 1 ].n_type != EQUAL )               return NULL;
     return tree;
 }
 
@@ -1298,16 +1309,16 @@ void walk( node *                       tree,
                 node *      assignNode = isAssignment( tree );
                 if ( assignNode != NULL )
                 {
-                    node *      testListNode = & ( assignNode->n_child[ 0 ] );
+                    node *      testListStarExprNode = & ( assignNode->n_child[ 0 ] );
                     if ( scope == GLOBAL_SCOPE )
-                        processAssign( testListNode, callbacks->onGlobal,
+                        processAssign( testListStarExprNode, callbacks->onGlobal,
                                        objectsLevel, lineShifts );
                     else if ( scope == CLASS_SCOPE )
-                        processAssign( testListNode,
+                        processAssign( testListStarExprNode,
                                        callbacks->onClassAttribute,
                                        objectsLevel, lineShifts );
                     else if ( scope == CLASS_METHOD_SCOPE )
-                        processInstanceMember( testListNode, callbacks,
+                        processInstanceMember( testListStarExprNode, callbacks,
                                                firstArgName, objectsLevel,
                                                lineShifts );
 

@@ -63,14 +63,18 @@ class CDMBriefParserTest( unittest.TestCase ):
         " The test process meat "
 
         info = cdmbriefparser.getBriefModuleInfoFromFile( pythonFile )
-        self.failUnless( info.isOK == True )
+        if info.isOK != True:
+            self.fail( "Error parsing the file " + pythonFile +
+                       ". Option: directly from a file." )
 
         f = open( pythonFile )
         content = f.read()
         f.close()
 
         info = cdmbriefparser.getBriefModuleInfoFromMemory( content )
-        self.failUnless( info.isOK == True )
+        if info.isOK != True:
+            self.fail( "Error parsing the file " + pythonFile +
+                       ". Option: from memory." )
 
         outFileName = pythonFile.replace( ".py", ".out" )
         outFile = open( outFileName, "w" )
@@ -78,8 +82,8 @@ class CDMBriefParserTest( unittest.TestCase ):
         outFile.close()
 
         okFileName = pythonFile.replace( ".py", ".ok" )
-        self.failUnless( files_equal( outFileName, okFileName ),
-                         errorMsg )
+        if not files_equal( outFileName, okFileName ):
+            self.fail( errorMsg )
         return
 
     def test_empty( self ):
@@ -183,7 +187,9 @@ class CDMBriefParserTest( unittest.TestCase ):
 
         pythonFile = self.dir + "errors.py"
         info = cdmbriefparser.getBriefModuleInfoFromFile( pythonFile )
-        self.failUnless( info.isOK != True )
+        if info.isOK == True:
+            self.fail( "Expected parsing error for file " + pythonFile +
+                       ". Option: directly from file." )
 
         outFileName = pythonFile.replace( ".py", ".out" )
         outFile = open( outFileName, "w" )
@@ -193,8 +199,8 @@ class CDMBriefParserTest( unittest.TestCase ):
         outFile.close()
 
         okFileName = pythonFile.replace( ".py", ".ok" )
-        self.failUnless( files_equal( outFileName, okFileName ),
-                         "errors test failed" )
+        if not files_equal( outFileName, okFileName ):
+            self.fail( "errors test failed" )
         return
 
     def test_wrong_indent( self ):
@@ -202,7 +208,9 @@ class CDMBriefParserTest( unittest.TestCase ):
 
         pythonFile = self.dir + "wrong_indent.py"
         info = cdmbriefparser.getBriefModuleInfoFromFile( pythonFile )
-        self.failUnless( info.isOK != True )
+        if info.isOK == True:
+            self.fail( "Expected parsing error for file " + pythonFile +
+                       ". Option: directly from file." )
 
         outFileName = pythonFile.replace( ".py", ".out" )
         outFile = open( outFileName, "w" )
@@ -212,8 +220,8 @@ class CDMBriefParserTest( unittest.TestCase ):
         outFile.close()
 
         okFileName = pythonFile.replace( ".py", ".ok" )
-        self.failUnless( files_equal( outFileName, okFileName ),
-                         "wrong indent test failed" )
+        if not files_equal( outFileName, okFileName ):
+            self.fail( "wrong indent test failed" )
         return
 
     def test_wrong_stop( self ):
@@ -221,7 +229,9 @@ class CDMBriefParserTest( unittest.TestCase ):
 
         pythonFile = self.dir + "wrong_stop.py"
         info = cdmbriefparser.getBriefModuleInfoFromFile( pythonFile )
-        self.failUnless( info.isOK != True )
+        if info.isOK == True:
+            self.fail( "Wrong stop test failed. Expected error. Option: "
+                       "directly from file " + pythonFile )
 
         outFileName = pythonFile.replace( ".py", ".out" )
         outFile = open( outFileName, "w" )
@@ -233,8 +243,8 @@ class CDMBriefParserTest( unittest.TestCase ):
         outFile.close()
 
         okFileName = pythonFile.replace( ".py", ".ok" )
-        self.failUnless( files_equal( outFileName, okFileName ),
-                         "wrong stop of the parser test failed" )
+        if not files_equal( outFileName, okFileName ):
+            self.fail( "wrong stop of the parser test failed" )
         return
 
     def test_print( self ):
@@ -249,7 +259,8 @@ class CDMBriefParserTest( unittest.TestCase ):
             for item in info.lexerErrors:
                 outFile.write( "\n" + item )
             outFile.close()
-        self.failUnless( info.isOK == True )
+        if info.isOK != True:
+            self.fail( "print statement test failed" )
         return
 
     def test_print_func( self ):
@@ -264,7 +275,8 @@ class CDMBriefParserTest( unittest.TestCase ):
             for item in info.lexerErrors:
                 outFile.write( "\n" + item )
             outFile.close()
-        self.failUnless( info.isOK == True )
+        if info.isOK != True:
+            self.fail( "Error testing the print function" )
         return
 
     def test_one_comment( self ):
@@ -298,14 +310,18 @@ class CDMBriefParserTest( unittest.TestCase ):
 
         pythonFile = self.dir + "loneimport.py"
         info = cdmbriefparser.getBriefModuleInfoFromFile( pythonFile )
-        self.failUnless( info.isOK != True )
+        if info.isOK == True:
+            self.fail( "lone import test failure. Expected error. Option: "
+                       "directly from file: " + pythonFile )
 
         f = open( pythonFile )
         content = f.read()
         f.close()
 
         info = cdmbriefparser.getBriefModuleInfoFromMemory( content )
-        self.failUnless( info.isOK != True )
+        if info.isOK == True:
+            self.fail( "lone import test failure. Expected error. Option: "
+                       "from memory. File: " + pythonFile )
         return
 
 
