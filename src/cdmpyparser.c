@@ -414,7 +414,8 @@ callOnFunction( PyObject *  onFunction,
                 int  line_, int  pos_, int  absPosition_,
                 int  kwLine_, int  kwPos_,
                 int  colonLine_, int  colonPos_,
-                int  objectsLevel_ )
+                int  objectsLevel_,
+                int  isAsync_ )
 {
     PyObject *  funcName = PyString_FromStringAndSize( name, length );
     PyObject *  line = PyInt_FromLong( line_ );
@@ -425,13 +426,15 @@ callOnFunction( PyObject *  onFunction,
     PyObject *  colonLine = PyInt_FromLong( colonLine_ );
     PyObject *  colonPos = PyInt_FromLong( colonPos_ );
     PyObject *  objectsLevel = PyInt_FromLong( objectsLevel_ );
+    PyObject *  isAsync = PyBool_FromLong(isAsync_);
     PyObject *  ret = PyObject_CallFunctionObjArgs(
                                 onFunction, funcName, line, pos,
                                 absPos, kwLine, kwPos, colonLine, colonPos,
-                                objectsLevel, NULL );
+                                objectsLevel, isAsync, NULL );
 
     if ( ret != NULL )
         Py_DECREF( ret );
+    Py_DECREF( isAsync );
     Py_DECREF( objectsLevel );
     Py_DECREF( colonPos );
     Py_DECREF( colonLine );
@@ -994,7 +997,8 @@ processFuncDefinition( node *                       tree,
                        enum Scope                   scope,
                        int                          entryLevel,
                        int *                        lineShifts,
-                       int                          isStaticMethod )
+                       int                          isStaticMethod,
+                       int                          isAsync )
 {
     assert( tree->n_type == funcdef );
     assert( tree->n_nchildren > 1 );
@@ -1018,7 +1022,8 @@ processFuncDefinition( node *                       tree,
                     /* ':' line and pos */
                     colonNode->n_lineno,
                     colonNode->n_col_offset + 1,        /* To make it 1-based */
-                    objectsLevel );
+                    objectsLevel,
+                    isAsync );
 
     const char *    firstArgName = NULL;
     int             firstArg = 1;
@@ -1297,13 +1302,35 @@ void walk( node *                       tree,
         case funcdef:
             processFuncDefinition( tree, callbacks,
                                    objectsLevel, scope, entryLevel,
-                                   lineShifts, isStaticMethod );
+                                   lineShifts, isStaticMethod, 0 );
+            return;
+        case async_funcdef:
+            {
+                node *      funcNode = & ( tree->n_child[ 1 ] );
+                processFuncDefinition( funcNode, callbacks,
+                                       objectsLevel, scope, entryLevel,
+                                       lineShifts, isStaticMethod, 1 );
+            }
             return;
         case classdef:
             processClassDefinition( tree, callbacks,
                                     objectsLevel, scope, entryLevel,
                                     lineShifts );
             return;
+        case async_stmt:
+            // It could be funcdef, with_stmt and for_stmt
+            // Here we are only interested in a funcdef
+            {
+                node *      stmtNode = & ( tree->n_child[ 1 ] );
+                if ( stmtNode->n_type == funcdef )
+                    processFuncDefinition( stmtNode, callbacks,
+                                           objectsLevel, scope, entryLevel,
+                                           lineShifts, isStaticMethod, 1 );
+            }
+            // No need to continue -- with & for are not for recognition by the
+            // parser and an async function has been processed if so
+            return;
+
         case stmt:
             {
                 node *      assignNode = isAssignment( tree );
