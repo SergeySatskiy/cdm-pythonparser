@@ -250,11 +250,12 @@ class Function( ModuleInfoBase ):
 
     __slots__ = [ "keywordLine", "keywordPos", "colonLine", "colonPos",
                   "docstring", "arguments", "decorators", "functions",
-                  "classes", "isAsync" ]
+                  "classes", "isAsync", "returnAnnotation" ]
 
     def __init__( self, funcName, line, pos, absPosition,
                         keywordLine, keywordPos,
-                        colonLine, colonPos, isAsync ):
+                        colonLine, colonPos, isAsync,
+                        returnAnnotation ):
         ModuleInfoBase.__init__( self, funcName, line, pos, absPosition )
 
         self.keywordLine = keywordLine  # line where 'def' keyword
@@ -264,6 +265,7 @@ class Function( ModuleInfoBase ):
         self.colonLine = colonLine      # line where ':' char starts (1-based)
         self.colonPos = colonPos        # pos where ':' char starts (1-based)
         self.isAsync = isAsync
+        self.returnAnnotation = returnAnnotation
 
         self.docstring = None
         self.arguments = []
@@ -290,6 +292,8 @@ class Function( ModuleInfoBase ):
                                        "]: '" + self.name + "'"
         if self.isAsync:
             out += " (async)"
+        if self.returnAnnotation:
+            out += " -> '" + self.returnAnnotation + "'"
         for item in self.arguments:
             out += '\n' + level * "    " + "Argument: '" + item + "'"
         for item in self.decorators:
@@ -491,11 +495,12 @@ class BriefModuleInfo( object ):
 
     def _onFunction( self, name, line, pos, absPosition,
                            keywordLine, keywordPos,
-                           colonLine, colonPos, level, isAsync ):
+                           colonLine, colonPos, level,
+                           isAsync, returnAnnotation ):
         " Memorizes a function "
         self.__flushLevel( level )
         f = Function( name, line, pos, absPosition, keywordLine, keywordPos,
-                      colonLine, colonPos, isAsync )
+                      colonLine, colonPos, isAsync, returnAnnotation )
         if self.__lastDecorators is not None:
             f.decorators = self.__lastDecorators
             self.__lastDecorators = None

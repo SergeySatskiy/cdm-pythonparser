@@ -415,7 +415,8 @@ callOnFunction( PyObject *  onFunction,
                 int  kwLine_, int  kwPos_,
                 int  colonLine_, int  colonPos_,
                 int  objectsLevel_,
-                int  isAsync_ )
+                int  isAsync_,
+                const char *  retAnnotation, int  annotationLength )
 {
     PyObject *  funcName = PyString_FromStringAndSize( name, length );
     PyObject *  line = PyInt_FromLong( line_ );
@@ -427,13 +428,26 @@ callOnFunction( PyObject *  onFunction,
     PyObject *  colonPos = PyInt_FromLong( colonPos_ );
     PyObject *  objectsLevel = PyInt_FromLong( objectsLevel_ );
     PyObject *  isAsync = PyBool_FromLong(isAsync_);
+    PyObject *  annotation;
+
+    if ( annotationLength > 0 )
+        annotation = PyString_FromStringAndSize( retAnnotation,
+                                                 annotationLength );
+    else
+    {
+        annotation = Py_None;
+        Py_INCREF( Py_None );
+    }
+
     PyObject *  ret = PyObject_CallFunctionObjArgs(
                                 onFunction, funcName, line, pos,
                                 absPos, kwLine, kwPos, colonLine, colonPos,
-                                objectsLevel, isAsync, NULL );
+                                objectsLevel, isAsync, annotation, NULL );
+
 
     if ( ret != NULL )
         Py_DECREF( ret );
+    Py_DECREF( annotation );
     Py_DECREF( isAsync );
     Py_DECREF( objectsLevel );
     Py_DECREF( colonPos );
@@ -538,6 +552,8 @@ static node *  findChildOfType( node *  from, int  type )
 /* It is used in:                                           */
 /* - the default argument values                            */
 /* - class inheritance                                      */
+/* - argumnts annotations                                   */
+/* - return value annotations                               */
 static void  collectTestString( node *  from, char *  buffer, int *  length )
 {
     if ( from->n_str != NULL )
@@ -1006,8 +1022,17 @@ processFuncDefinition( node *                       tree,
     node *      defNode = & ( tree->n_child[ 0 ] );
     node *      nameNode = & ( tree->n_child[ 1 ] );
     node *      colonNode = findChildOfType( tree, COLON );
+    node *      annotNode = findChildOfType( tree, test );
 
     assert( colonNode != NULL );
+
+    char        returnAnnotation[ MAX_ARG_VAL_SIZE ];
+    int         annotationLength = 0;
+    if ( annotNode != NULL )
+    {
+        // The only 'test' child of a 'funcdef' is for a ret val annotation
+        collectTestString( annotNode, returnAnnotation, & annotationLength );
+    }
 
     ++objectsLevel;
     callOnFunction( callbacks->onFunction,
@@ -1023,7 +1048,8 @@ processFuncDefinition( node *                       tree,
                     colonNode->n_lineno,
                     colonNode->n_col_offset + 1,        /* To make it 1-based */
                     objectsLevel,
-                    isAsync );
+                    isAsync,
+                    returnAnnotation, annotationLength );
 
     const char *    firstArgName = NULL;
     int             firstArg = 1;
