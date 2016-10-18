@@ -245,6 +245,25 @@ class Docstring( object ):
         return "Docstring[" + str( self.line ) + "]: '" + self.text + "'"
 
 
+class Argument:
+    " Holds an information about an argument "
+
+    __slots__ = [ "name", "annotation", "value" ]
+
+    def __init__( self, name, annotation ):
+        self.name = name
+        self.annotation = annotation
+        self.value = None
+
+    def __str__( self ):
+        output = self.name
+        if self.annotation is not None:
+            output += ': ' + self.annotation
+        if self.value is not None:
+            output += ' = ' + self.value
+        return output
+
+
 class Function( ModuleInfoBase ):
     " Holds information about a single function"
 
@@ -268,7 +287,7 @@ class Function( ModuleInfoBase ):
         self.returnAnnotation = returnAnnotation
 
         self.docstring = None
-        self.arguments = []
+        self.arguments = []     # instances of the Argument class
         self.decorators = []
         self.functions = []     # nested functions
         self.classes = []       # nested classes
@@ -292,10 +311,10 @@ class Function( ModuleInfoBase ):
                                        "]: '" + self.name + "'"
         if self.isAsync:
             out += " (async)"
-        if self.returnAnnotation:
+        if self.returnAnnotation is not None:
             out += " -> '" + self.returnAnnotation + "'"
         for item in self.arguments:
-            out += '\n' + level * "    " + "Argument: '" + item + "'"
+            out += '\n' + level * "    " + "Argument: '" + str( item ) + "'"
         for item in self.decorators:
             out += '\n' + level * "    " + str( item )
         if self.docstring is not None:
@@ -309,9 +328,20 @@ class Function( ModuleInfoBase ):
     def getDisplayName( self ):
         " Provides a name for display purpose "
         displayName = self.name + "("
+        if self.isAsync:
+            displayName = "async " + displayName
+        first = True
+        for arg in self.arguments:
+            if first:
+                displayName += " " + str( arg )
+                first = False
+            else:
+                displayName += ", " + str( arg )
         if self.arguments:
-            displayName += " " + ", ".join( self.arguments ) + " "
+            displayName += " "
         displayName += ")"
+        if self.returnAnnotation is not None:
+            displayName += ' -> ' + self.returnAnnotation
         return displayName
 
 
@@ -575,14 +605,14 @@ class BriefModuleInfo( object ):
         self.docstring = Docstring( trim_docstring( docstr ), line )
         return
 
-    def _onArgument( self, name ):
+    def _onArgument( self, name, annotation ):
         " Memorizes a function argument "
-        self.objectsStack[ -1 ].arguments.append( name )
+        self.objectsStack[ -1 ].arguments.append( Argument( name, annotation ) )
         return
 
     def _onArgumentValue( self, value ):
         " Memorizes a function argument value "
-        self.objectsStack[ -1 ].arguments[ -1 ] += " = " + value
+        self.objectsStack[ -1 ].arguments[ -1 ].value = value
         return
 
     def _onBaseClass( self, name ):

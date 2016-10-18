@@ -214,6 +214,34 @@ callOnArg( PyObject *  onArg, const char *  name, int  length )
 
 
 static void
+callOnAnnotatedArg( PyObject *  onArg,
+                    const char *  name, int  length,
+                    const char *  annotation, int  annotationLength )
+{
+    PyObject *  argName = PyString_FromStringAndSize( name, length );
+    PyObject *  argumentAnnotation;
+    if ( annotationLength > 0 )
+    {
+        argumentAnnotation = PyString_FromStringAndSize( annotation,
+                                                         annotationLength );
+    }
+    else
+    {
+        argumentAnnotation = Py_None;
+        Py_INCREF( Py_None );
+    }
+
+    PyObject *  ret = PyObject_CallFunctionObjArgs( onArg, argName,
+                                                    argumentAnnotation, NULL );
+    if ( ret != NULL )
+        Py_DECREF( ret );
+    Py_DECREF( argumentAnnotation );
+    Py_DECREF( argName );
+    return;
+}
+
+
+static void
 callOnArgVal( PyObject *  onArgVal, const char *  value, int  length )
 {
     PyObject *  argVal = PyString_FromStringAndSize( value, length );
@@ -431,8 +459,10 @@ callOnFunction( PyObject *  onFunction,
     PyObject *  annotation;
 
     if ( annotationLength > 0 )
+    {
         annotation = PyString_FromStringAndSize( retAnnotation,
                                                  annotationLength );
+    }
     else
     {
         annotation = Py_None;
@@ -859,13 +889,22 @@ static void  processImport( node *                       tree,
 static const char *  processArgument( node *        tree,
                                       PyObject *    onArg )
 {
-    assert( tree->n_type == fpdef );
+    assert( tree->n_type == tfpdef );
     assert( tree->n_nchildren > 0 );
 
     node *      nameNode = & ( tree->n_child[ 0 ] );
     assert( nameNode->n_type == NAME );
 
-    callOnArg( onArg, nameNode->n_str, strlen( nameNode->n_str ) );
+    // The only 'test' node is for an annotation
+    node *      testNode = findChildOfType( tree, test );
+    char        annotation[ MAX_ARG_VAL_SIZE ];
+    int         annotationLength = 0;
+
+    if ( testNode != NULL )
+        collectTestString( testNode, annotation, & annotationLength );
+
+    callOnAnnotatedArg( onArg, nameNode->n_str, strlen( nameNode->n_str ),
+                        annotation, annotationLength );
     return nameNode->n_str;
 }
 
@@ -1088,7 +1127,11 @@ processFuncDefinition( node *                       tree,
 
                 starName[ 0 ] = '*';
                 memcpy( & ( starName[ 1 ] ), nameChild->n_str, nameLen );
-                callOnArg( callbacks->onArgument, starName, nameLen + 1 );
+
+                // *arg may not have a default value
+                callOnAnnotatedArg( callbacks->onArgument,
+                                    starName, nameLen + 1,
+                                    NULL, 0 );
             }
             else if ( child->n_type == DOUBLESTAR )
             {
@@ -1101,7 +1144,11 @@ processFuncDefinition( node *                       tree,
                 starName[ 0 ] = '*';
                 starName[ 1 ] = '*';
                 memcpy( & ( starName[ 2 ] ), nameChild->n_str, nameLen );
-                callOnArg( callbacks->onArgument, starName, nameLen + 2 );
+
+                // **arg may not have a default value
+                callOnAnnotatedArg( callbacks->onArgument,
+                                    starName, nameLen + 2,
+                                    NULL, 0 );
             }
             else if ( child->n_type == test )
             {

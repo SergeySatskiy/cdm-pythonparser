@@ -182,6 +182,12 @@ class CDMBriefParserTest( unittest.TestCase ):
                    "class members test failed" )
         return
 
+    def test_annotations( self ):
+        " Test class members "
+        self.meat( self.dir + "annot.py",
+                   "annotations test failed" )
+        return
+
     def test_errors( self ):
         " Test errors "
 
