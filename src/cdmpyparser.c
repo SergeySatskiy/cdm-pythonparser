@@ -1128,10 +1128,17 @@ processFuncDefinition( node *                       tree,
                 starName[ 0 ] = '*';
                 memcpy( & ( starName[ 1 ] ), nameChild->n_str, nameLen );
 
-                // *arg may not have a default value
+                char        annotation[ MAX_ARG_VAL_SIZE ];
+                int         annotationLength = 0;
+                node *      annotNode = findChildOfType( tfpdefChild, test );
+
+                if ( annotNode != NULL )
+                    collectTestString( annotNode, annotation, & annotationLength );
+
+                // *arg may not have a default value but may have an annotation
                 callOnAnnotatedArg( callbacks->onArgument,
                                     starName, nameLen + 1,
-                                    NULL, 0 );
+                                    annotation, annotationLength );
             }
             else if ( child->n_type == DOUBLESTAR )
             {
@@ -1145,10 +1152,18 @@ processFuncDefinition( node *                       tree,
                 starName[ 1 ] = '*';
                 memcpy( & ( starName[ 2 ] ), nameChild->n_str, nameLen );
 
-                // **arg may not have a default value
+                char        annotation[ MAX_ARG_VAL_SIZE ];
+                int         annotationLength = 0;
+                node *      annotNode = findChildOfType( tfpdefChild, test );
+
+                if ( annotNode != NULL )
+                    collectTestString( annotNode, annotation, & annotationLength );
+
+                // **arg may not have a default value but may have an
+                // annotation
                 callOnAnnotatedArg( callbacks->onArgument,
                                     starName, nameLen + 2,
-                                    NULL, 0 );
+                                    annotation, annotationLength );
             }
             else if ( child->n_type == test )
             {

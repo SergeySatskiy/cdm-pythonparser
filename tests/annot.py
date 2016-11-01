@@ -34,3 +34,8 @@ def f62(a=160, b:str='90', c)->str:
     pass
 def f63(a=160, b:str='90', c)->'':
     pass
+
+def f7(*a:list):
+    pass
+def f71(*a, **b:str):
+    pass
