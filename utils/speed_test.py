@@ -48,7 +48,7 @@ def collectFiles(path, files):
 
 def pyclbrTest(files):
     """Loop for the library standard parser"""
-#    time.sleep( 0.1 )
+#    time.sleep(0.1)
 #    return
     count = 0
     for item in files:
@@ -68,7 +68,7 @@ def cdmpyparserTest(files):
     errorCount = 0
     count = 0
     for item in files:
-        # print "Processing " + item + " ..."
+        # print("Processing " + item + " ...")
         tempObj = cdmbriefparser.getBriefModuleInfoFromFile(item)
         if SHOW_ERRORS:
             if not tempObj.isOK:
@@ -91,6 +91,7 @@ def deltaToFloat(delta):
 print("Speed test compares the time required for "
       "cdmpyparser and the standard pyclbr modules to collect module info.")
 print("cdmpyparser version: " + cdmbriefparser.getVersion())
+print("Module file: " + cdmbriefparser.__file__)
 print("")
 
 

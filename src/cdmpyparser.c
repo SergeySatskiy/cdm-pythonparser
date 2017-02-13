@@ -1119,25 +1119,39 @@ processFuncDefinition( node *                       tree,
             }
             else if ( child->n_type == STAR )
             {
-                ++k;
-                node *      tfpdefChild = & ( argsNode->n_child[ k ] );
-                node *      nameChild = & ( tfpdefChild->n_child[ 0 ] );
-                int         nameLen = strlen( nameChild->n_str );
+                firstArg = 0;
+
                 char        starName[ MAX_DOTTED_NAME_LENGTH ];
-
-                starName[ 0 ] = '*';
-                memcpy( & ( starName[ 1 ] ), nameChild->n_str, nameLen );
-
+                int         nameLen = 1;
                 char        annotation[ MAX_ARG_VAL_SIZE ];
                 int         annotationLength = 0;
-                node *      annotNode = findChildOfType( tfpdefChild, test );
 
-                if ( annotNode != NULL )
-                    collectTestString( annotNode, annotation, & annotationLength );
+                starName[ 0 ] = '*';
+
+                /* The * argument may be without a tfpdef */
+                if ( (k + 1) < argsNode->n_nchildren )
+                {
+                    node *      nextNode = & ( argsNode->n_child[ k + 1 ] );
+                    if ( nextNode->n_type == tfpdef )
+                    {
+                        ++k;
+                        node *      tfpdefChild = nextNode;
+                        node *      nameChild = & ( tfpdefChild->n_child[ 0 ] );
+
+                        nameLen = strlen( nameChild->n_str );
+                        memcpy( & ( starName[ 1 ] ), nameChild->n_str, nameLen );
+                        ++nameLen;
+
+                        node *      annotNode = findChildOfType( tfpdefChild, test );
+
+                        if ( annotNode != NULL )
+                            collectTestString( annotNode, annotation, & annotationLength );
+                    }
+                }
 
                 // *arg may not have a default value but may have an annotation
                 callOnAnnotatedArg( callbacks->onArgument,
-                                    starName, nameLen + 1,
+                                    starName, nameLen,
                                     annotation, annotationLength );
             }
             else if ( child->n_type == DOUBLESTAR )

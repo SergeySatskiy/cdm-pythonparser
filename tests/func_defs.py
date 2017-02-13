@@ -18,3 +18,6 @@ def f17( a, b, *args ): pass
 def f18( a, b, c=30, *args, **kwargs ): pass
 def f19( a, x, \
          z = l[98-67]): pass
+def f20(*): pass
+def f21(*, x=None): pass
+def f22(x=None, *): pass
