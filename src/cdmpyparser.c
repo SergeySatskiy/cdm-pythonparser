@@ -214,6 +214,34 @@ callOnArg( PyObject *  onArg, const char *  name, int  length )
 
 
 static void
+callOnAnnotatedArg( PyObject *  onArg,
+                    const char *  name, int  length,
+                    const char *  annotation, int  annotationLength )
+{
+    PyObject *  argName = PyString_FromStringAndSize( name, length );
+    PyObject *  argumentAnnotation;
+    if ( annotationLength > 0 )
+    {
+        argumentAnnotation = PyString_FromStringAndSize( annotation,
+                                                         annotationLength );
+    }
+    else
+    {
+        argumentAnnotation = Py_None;
+        Py_INCREF( Py_None );
+    }
+
+    PyObject *  ret = PyObject_CallFunctionObjArgs( onArg, argName,
+                                                    argumentAnnotation, NULL );
+    if ( ret != NULL )
+        Py_DECREF( ret );
+    Py_DECREF( argumentAnnotation );
+    Py_DECREF( argName );
+    return;
+}
+
+
+static void
 callOnArgVal( PyObject *  onArgVal, const char *  value, int  length )
 {
     PyObject *  argVal = PyString_FromStringAndSize( value, length );
@@ -414,7 +442,9 @@ callOnFunction( PyObject *  onFunction,
                 int  line_, int  pos_, int  absPosition_,
                 int  kwLine_, int  kwPos_,
                 int  colonLine_, int  colonPos_,
-                int  objectsLevel_ )
+                int  objectsLevel_,
+                int  isAsync_,
+                const char *  retAnnotation, int  annotationLength )
 {
     PyObject *  funcName = PyString_FromStringAndSize( name, length );
     PyObject *  line = PyInt_FromLong( line_ );
@@ -425,13 +455,30 @@ callOnFunction( PyObject *  onFunction,
     PyObject *  colonLine = PyInt_FromLong( colonLine_ );
     PyObject *  colonPos = PyInt_FromLong( colonPos_ );
     PyObject *  objectsLevel = PyInt_FromLong( objectsLevel_ );
+    PyObject *  isAsync = PyBool_FromLong(isAsync_);
+    PyObject *  annotation;
+
+    if ( annotationLength > 0 )
+    {
+        annotation = PyString_FromStringAndSize( retAnnotation,
+                                                 annotationLength );
+    }
+    else
+    {
+        annotation = Py_None;
+        Py_INCREF( Py_None );
+    }
+
     PyObject *  ret = PyObject_CallFunctionObjArgs(
                                 onFunction, funcName, line, pos,
                                 absPos, kwLine, kwPos, colonLine, colonPos,
-                                objectsLevel, NULL );
+                                objectsLevel, isAsync, annotation, NULL );
+
 
     if ( ret != NULL )
         Py_DECREF( ret );
+    Py_DECREF( annotation );
+    Py_DECREF( isAsync );
     Py_DECREF( objectsLevel );
     Py_DECREF( colonPos );
     Py_DECREF( colonLine );
@@ -535,6 +582,8 @@ static node *  findChildOfType( node *  from, int  type )
 /* It is used in:                                           */
 /* - the default argument values                            */
 /* - class inheritance                                      */
+/* - argumnts annotations                                   */
+/* - return value annotations                               */
 static void  collectTestString( node *  from, char *  buffer, int *  length )
 {
     if ( from->n_str != NULL )
@@ -840,13 +889,22 @@ static void  processImport( node *                       tree,
 static const char *  processArgument( node *        tree,
                                       PyObject *    onArg )
 {
-    assert( tree->n_type == fpdef );
+    assert( tree->n_type == tfpdef );
     assert( tree->n_nchildren > 0 );
 
     node *      nameNode = & ( tree->n_child[ 0 ] );
     assert( nameNode->n_type == NAME );
 
-    callOnArg( onArg, nameNode->n_str, strlen( nameNode->n_str ) );
+    // The only 'test' node is for an annotation
+    node *      testNode = findChildOfType( tree, test );
+    char        annotation[ MAX_ARG_VAL_SIZE ];
+    int         annotationLength = 0;
+
+    if ( testNode != NULL )
+        collectTestString( testNode, annotation, & annotationLength );
+
+    callOnAnnotatedArg( onArg, nameNode->n_str, strlen( nameNode->n_str ),
+                        annotation, annotationLength );
     return nameNode->n_str;
 }
 
@@ -957,7 +1015,7 @@ static void  processClassDefinition( node *                       tree,
                  objectsLevel );
 
     /* Collect inheritance list */
-    node *      listNode = findChildOfType( tree, testlist );
+    node *      listNode = findChildOfType( tree, arglist );
     if ( listNode != NULL )
     {
         node *      child;
@@ -965,7 +1023,7 @@ static void  processClassDefinition( node *                       tree,
         for ( int  k = 0; k < n; ++k )
         {
             child = & ( listNode->n_child[ k ] );
-            if ( child->n_type == test )
+            if ( child->n_type == argument )
             {
                 char        buffer[ MAX_ARG_VAL_SIZE ];
                 int         length = 0;
@@ -994,7 +1052,8 @@ processFuncDefinition( node *                       tree,
                        enum Scope                   scope,
                        int                          entryLevel,
                        int *                        lineShifts,
-                       int                          isStaticMethod )
+                       int                          isStaticMethod,
+                       int                          isAsync )
 {
     assert( tree->n_type == funcdef );
     assert( tree->n_nchildren > 1 );
@@ -1002,8 +1061,17 @@ processFuncDefinition( node *                       tree,
     node *      defNode = & ( tree->n_child[ 0 ] );
     node *      nameNode = & ( tree->n_child[ 1 ] );
     node *      colonNode = findChildOfType( tree, COLON );
+    node *      annotNode = findChildOfType( tree, test );
 
     assert( colonNode != NULL );
+
+    char        returnAnnotation[ MAX_ARG_VAL_SIZE ];
+    int         annotationLength = 0;
+    if ( annotNode != NULL )
+    {
+        // The only 'test' child of a 'funcdef' is for a ret val annotation
+        collectTestString( annotNode, returnAnnotation, & annotationLength );
+    }
 
     ++objectsLevel;
     callOnFunction( callbacks->onFunction,
@@ -1018,14 +1086,16 @@ processFuncDefinition( node *                       tree,
                     /* ':' line and pos */
                     colonNode->n_lineno,
                     colonNode->n_col_offset + 1,        /* To make it 1-based */
-                    objectsLevel );
+                    objectsLevel,
+                    isAsync,
+                    returnAnnotation, annotationLength );
 
     const char *    firstArgName = NULL;
     int             firstArg = 1;
     node *          paramNode = findChildOfType( tree, parameters );
     assert( paramNode != NULL );
 
-    node *      argsNode = findChildOfType( paramNode, varargslist );
+    node *      argsNode = findChildOfType( paramNode, typedargslist );
     if ( argsNode != NULL )
     {
         /* The function has arguments */
@@ -1034,7 +1104,7 @@ processFuncDefinition( node *                       tree,
         while ( k < argsNode->n_nchildren )
         {
             child = & ( argsNode->n_child[ k ] );
-            if ( child->n_type == fpdef )
+            if ( child->n_type == tfpdef )
             {
                 if ( firstArg == 1 )
                 {
@@ -1049,26 +1119,65 @@ processFuncDefinition( node *                       tree,
             }
             else if ( child->n_type == STAR )
             {
-                ++k;
-                node *      nameChild = & ( argsNode->n_child[ k ] );
-                int         nameLen = strlen( nameChild->n_str );
+                firstArg = 0;
+
                 char        starName[ MAX_DOTTED_NAME_LENGTH ];
+                int         nameLen = 1;
+                char        annotation[ MAX_ARG_VAL_SIZE ];
+                int         annotationLength = 0;
 
                 starName[ 0 ] = '*';
-                memcpy( & ( starName[ 1 ] ), nameChild->n_str, nameLen );
-                callOnArg( callbacks->onArgument, starName, nameLen + 1 );
+
+                /* The * argument may be without a tfpdef */
+                if ( (k + 1) < argsNode->n_nchildren )
+                {
+                    node *      nextNode = & ( argsNode->n_child[ k + 1 ] );
+                    if ( nextNode->n_type == tfpdef )
+                    {
+                        ++k;
+                        node *      tfpdefChild = nextNode;
+                        node *      nameChild = & ( tfpdefChild->n_child[ 0 ] );
+
+                        nameLen = strlen( nameChild->n_str );
+                        memcpy( & ( starName[ 1 ] ), nameChild->n_str, nameLen );
+                        ++nameLen;
+
+                        node *      annotNode = findChildOfType( tfpdefChild, test );
+
+                        if ( annotNode != NULL )
+                            collectTestString( annotNode, annotation, & annotationLength );
+                    }
+                }
+
+                // *arg may not have a default value but may have an annotation
+                callOnAnnotatedArg( callbacks->onArgument,
+                                    starName, nameLen,
+                                    annotation, annotationLength );
             }
             else if ( child->n_type == DOUBLESTAR )
             {
                 ++k;
-                node *      nameChild = & ( argsNode->n_child[ k ] );
+                node *      tfpdefChild = & ( argsNode->n_child[ k ] );
+                node *      nameChild = & ( tfpdefChild->n_child[ 0 ] );
                 int         nameLen = strlen( nameChild->n_str );
                 char        starName[ MAX_DOTTED_NAME_LENGTH ];
 
                 starName[ 0 ] = '*';
                 starName[ 1 ] = '*';
                 memcpy( & ( starName[ 2 ] ), nameChild->n_str, nameLen );
-                callOnArg( callbacks->onArgument, starName, nameLen + 2 );
+
+                char        annotation[ MAX_ARG_VAL_SIZE ];
+                int         annotationLength = 0;
+                node *      annotNode = findChildOfType( tfpdefChild, test );
+
+                if ( annotNode != NULL )
+                    collectTestString( annotNode, annotation, & annotationLength );
+
+                // **arg may not have a default value but may have an
+                // annotation
+                callOnAnnotatedArg( callbacks->onArgument,
+                                    starName, nameLen + 2,
+                                    annotation, annotationLength );
             }
             else if ( child->n_type == test )
             {
@@ -1118,7 +1227,8 @@ static void processAssign( node *              tree,
                            int *               lineShifts )
 {
     assert( tree->n_type == testlist ||
-            tree->n_type == testlist_comp );
+            tree->n_type == testlist_comp ||
+            tree->n_type == testlist_star_expr );
 
     node *      child;
     for ( int  k = 0; k < tree->n_nchildren; ++k )
@@ -1131,15 +1241,19 @@ static void processAssign( node *              tree,
             if ( child == NULL )
                 continue;
             /* trailer means it is usage, not the initialization */
-            if ( findChildOfType( powerNode, trailer ) != NULL )
-                continue;
+            node *      atomExprNode = findChildOfType( powerNode, atom_expr );
+            if ( atomExprNode != NULL )
+            {
+                if ( findChildOfType( atomExprNode, trailer ) != NULL )
+                    continue;
+            }
 
             if ( child->n_child[ 0 ].n_type == LPAR ||
                  child->n_child[ 0 ].n_type == LSQB )
             {
                 node *      listNode = findChildOfType( child, testlist_comp );
-                if ( listNode == NULL )
-                    listNode = findChildOfType( child, listmaker );
+//                if ( listNode == NULL )
+//                    listNode = findChildOfType( child, listmaker );
                 if ( listNode != NULL )
                     processAssign( listNode, onVariable,
                                    objectsLevel, lineShifts );
@@ -1171,7 +1285,8 @@ static void processInstanceMember( node *                      tree,
         return;
 
     assert( tree->n_type == testlist ||
-            tree->n_type == testlist_comp );
+            tree->n_type == testlist_comp ||
+            tree->n_type == testlist_star_expr );
 
     node *      child;
     int         n = tree->n_nchildren;
@@ -1189,8 +1304,8 @@ static void processInstanceMember( node *                      tree,
                  child->n_child[ 0 ].n_type == LSQB )
             {
                 node *      listNode = findChildOfType( child, testlist_comp );
-                if ( listNode == NULL )
-                    listNode = findChildOfType( child, listmaker );
+//                if ( listNode == NULL )
+//                    listNode = findChildOfType( child, listmaker );
                 if ( listNode != NULL )
                     processInstanceMember( listNode, callbacks, firstArgName,
                                            objectsLevel, lineShifts );
@@ -1201,12 +1316,17 @@ static void processInstanceMember( node *                      tree,
              * the usage, not initialization */
             int         trailerCount = 0;
             node *      trailerNode = NULL;
-            for ( int  j = 0; j < powerNode->n_nchildren; ++j )
+            node *      atomExprNode = findChildOfType( powerNode, atom_expr );
+
+            if ( atomExprNode == NULL )
+                continue;
+
+            for ( int  j = 0; j < atomExprNode->n_nchildren; ++j )
             {
-                if ( powerNode->n_child[ j ].n_type == trailer )
+                if ( atomExprNode->n_child[ j ].n_type == trailer )
                 {
                     ++trailerCount;
-                    trailerNode = & ( powerNode->n_child[ j ] );
+                    trailerNode = & ( atomExprNode->n_child[ j ] );
                 }
             }
             if ( trailerCount != 1 )
@@ -1248,18 +1368,18 @@ static void processInstanceMember( node *                      tree,
 static node *  isAssignment( node *  tree )
 {
     assert( tree->n_type == stmt );
-    if ( tree->n_nchildren < 1 )                    return NULL;
+    if ( tree->n_nchildren < 1 )                            return NULL;
     tree = & ( tree->n_child[ 0 ] );
-    if ( tree->n_type != simple_stmt )              return NULL;
-    if ( tree->n_nchildren < 1 )                    return NULL;
+    if ( tree->n_type != simple_stmt )                      return NULL;
+    if ( tree->n_nchildren < 1 )                            return NULL;
     tree = & ( tree->n_child[ 0 ] );
-    if ( tree->n_type != small_stmt )               return NULL;
-    if ( tree->n_nchildren < 1 )                    return NULL;
+    if ( tree->n_type != small_stmt )                       return NULL;
+    if ( tree->n_nchildren < 1 )                            return NULL;
     tree = & ( tree->n_child[ 0 ] );
-    if ( tree->n_type != expr_stmt )                return NULL;
-    if ( tree->n_nchildren < 2 )                    return NULL;
-    if ( tree->n_child[ 0 ].n_type != testlist )    return NULL;
-    if ( tree->n_child[ 1 ].n_type != EQUAL )       return NULL;
+    if ( tree->n_type != expr_stmt )                        return NULL;
+    if ( tree->n_nchildren < 2 )                            return NULL;
+    if ( tree->n_child[ 0 ].n_type != testlist_star_expr )  return NULL;
+    if ( tree->n_child[ 1 ].n_type != EQUAL )               return NULL;
     return tree;
 }
 
@@ -1284,28 +1404,50 @@ void walk( node *                       tree,
         case funcdef:
             processFuncDefinition( tree, callbacks,
                                    objectsLevel, scope, entryLevel,
-                                   lineShifts, isStaticMethod );
+                                   lineShifts, isStaticMethod, 0 );
+            return;
+        case async_funcdef:
+            {
+                node *      funcNode = & ( tree->n_child[ 1 ] );
+                processFuncDefinition( funcNode, callbacks,
+                                       objectsLevel, scope, entryLevel,
+                                       lineShifts, isStaticMethod, 1 );
+            }
             return;
         case classdef:
             processClassDefinition( tree, callbacks,
                                     objectsLevel, scope, entryLevel,
                                     lineShifts );
             return;
+        case async_stmt:
+            // It could be funcdef, with_stmt and for_stmt
+            // Here we are only interested in a funcdef
+            {
+                node *      stmtNode = & ( tree->n_child[ 1 ] );
+                if ( stmtNode->n_type == funcdef )
+                    processFuncDefinition( stmtNode, callbacks,
+                                           objectsLevel, scope, entryLevel,
+                                           lineShifts, isStaticMethod, 1 );
+            }
+            // No need to continue -- with & for are not for recognition by the
+            // parser and an async function has been processed if so
+            return;
+
         case stmt:
             {
                 node *      assignNode = isAssignment( tree );
                 if ( assignNode != NULL )
                 {
-                    node *      testListNode = & ( assignNode->n_child[ 0 ] );
+                    node *      testListStarExprNode = & ( assignNode->n_child[ 0 ] );
                     if ( scope == GLOBAL_SCOPE )
-                        processAssign( testListNode, callbacks->onGlobal,
+                        processAssign( testListStarExprNode, callbacks->onGlobal,
                                        objectsLevel, lineShifts );
                     else if ( scope == CLASS_SCOPE )
-                        processAssign( testListNode,
+                        processAssign( testListStarExprNode,
                                        callbacks->onClassAttribute,
                                        objectsLevel, lineShifts );
                     else if ( scope == CLASS_METHOD_SCOPE )
-                        processInstanceMember( testListNode, callbacks,
+                        processInstanceMember( testListStarExprNode, callbacks,
                                                firstArgName, objectsLevel,
                                                lineShifts );
 

@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 #
 # codimension - graphics python two-way code editor and analyzer
-# Copyright (C) 2010  Sergey Satskiy <sergey.satskiy@gmail.com>
+# Copyright (C) 2010-2016  Sergey Satskiy <sergey.satskiy@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -17,14 +17,12 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
-# $Id$
-#
 
 """ The file holds types and a glue code between python and C python
     code parser """
 
 import _cdmpyparser
-from sys import maxint
+from sys import maxsize
 
 
 
@@ -39,7 +37,7 @@ def trim_docstring( docstring ):
     lines = docstring.expandtabs().splitlines()
 
     # Determine minimum indentation (first line doesn't count):
-    indent = maxint
+    indent = maxsize
     for line in lines[ 1: ]:
         stripped = line.lstrip()
         if stripped:
@@ -47,7 +45,7 @@ def trim_docstring( docstring ):
 
     # Remove indentation (first line is special):
     lines[ 0 ] = lines[ 0 ].strip()
-    if indent < maxint:
+    if indent < maxsize:
         index = 1
         for line in lines[ 1: ]:
             lines[ index ] = line[ indent: ].rstrip()
@@ -247,16 +245,36 @@ class Docstring( object ):
         return "Docstring[" + str( self.line ) + "]: '" + self.text + "'"
 
 
+class Argument:
+    " Holds an information about an argument "
+
+    __slots__ = [ "name", "annotation", "value" ]
+
+    def __init__( self, name, annotation ):
+        self.name = name
+        self.annotation = annotation
+        self.value = None
+
+    def __str__( self ):
+        output = self.name
+        if self.annotation is not None:
+            output += ': ' + self.annotation
+        if self.value is not None:
+            output += ' = ' + self.value
+        return output
+
+
 class Function( ModuleInfoBase ):
     " Holds information about a single function"
 
     __slots__ = [ "keywordLine", "keywordPos", "colonLine", "colonPos",
                   "docstring", "arguments", "decorators", "functions",
-                  "classes" ]
+                  "classes", "isAsync", "returnAnnotation" ]
 
     def __init__( self, funcName, line, pos, absPosition,
                         keywordLine, keywordPos,
-                        colonLine, colonPos ):
+                        colonLine, colonPos, isAsync,
+                        returnAnnotation ):
         ModuleInfoBase.__init__( self, funcName, line, pos, absPosition )
 
         self.keywordLine = keywordLine  # line where 'def' keyword
@@ -265,9 +283,11 @@ class Function( ModuleInfoBase ):
                                         # starts (1-based).
         self.colonLine = colonLine      # line where ':' char starts (1-based)
         self.colonPos = colonPos        # pos where ':' char starts (1-based)
+        self.isAsync = isAsync
+        self.returnAnnotation = returnAnnotation
 
         self.docstring = None
-        self.arguments = []
+        self.arguments = []     # instances of the Argument class
         self.decorators = []
         self.functions = []     # nested functions
         self.classes = []       # nested classes
@@ -289,8 +309,12 @@ class Function( ModuleInfoBase ):
                                        ":" + str(self.colonLine) + \
                                        ":" + str(self.colonPos) + \
                                        "]: '" + self.name + "'"
+        if self.isAsync:
+            out += " (async)"
+        if self.returnAnnotation is not None:
+            out += " -> '" + self.returnAnnotation + "'"
         for item in self.arguments:
-            out += '\n' + level * "    " + "Argument: '" + item + "'"
+            out += '\n' + level * "    " + "Argument: '" + str( item ) + "'"
         for item in self.decorators:
             out += '\n' + level * "    " + str( item )
         if self.docstring is not None:
@@ -304,9 +328,20 @@ class Function( ModuleInfoBase ):
     def getDisplayName( self ):
         " Provides a name for display purpose "
         displayName = self.name + "("
+        if self.isAsync:
+            displayName = "async " + displayName
+        first = True
+        for arg in self.arguments:
+            if first:
+                displayName += " " + str( arg )
+                first = False
+            else:
+                displayName += ", " + str( arg )
         if self.arguments:
-            displayName += " " + ", ".join( self.arguments ) + " "
+            displayName += " "
         displayName += ")"
+        if self.returnAnnotation is not None:
+            displayName += ' -> ' + self.returnAnnotation
         return displayName
 
 
@@ -490,11 +525,12 @@ class BriefModuleInfo( object ):
 
     def _onFunction( self, name, line, pos, absPosition,
                            keywordLine, keywordPos,
-                           colonLine, colonPos, level ):
+                           colonLine, colonPos, level,
+                           isAsync, returnAnnotation ):
         " Memorizes a function "
         self.__flushLevel( level )
         f = Function( name, line, pos, absPosition, keywordLine, keywordPos,
-                      colonLine, colonPos )
+                      colonLine, colonPos, isAsync, returnAnnotation )
         if self.__lastDecorators is not None:
             f.decorators = self.__lastDecorators
             self.__lastDecorators = None
@@ -569,14 +605,14 @@ class BriefModuleInfo( object ):
         self.docstring = Docstring( trim_docstring( docstr ), line )
         return
 
-    def _onArgument( self, name ):
+    def _onArgument( self, name, annotation ):
         " Memorizes a function argument "
-        self.objectsStack[ -1 ].arguments.append( name )
+        self.objectsStack[ -1 ].arguments.append( Argument( name, annotation ) )
         return
 
     def _onArgumentValue( self, value ):
         " Memorizes a function argument value "
-        self.objectsStack[ -1 ].arguments[ -1 ] += " = " + value
+        self.objectsStack[ -1 ].arguments[ -1 ].value = value
         return
 
     def _onBaseClass( self, name ):
