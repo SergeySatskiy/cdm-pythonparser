@@ -785,6 +785,20 @@ static void  processImport( node *                       tree,
                 needFlush = 1;
                 continue;
             }
+            if ( child->n_type == ELLIPSIS )
+            {
+                // Part of the name
+                name[ length ] = '.';
+                ++length;
+                name[ length ] = '.';
+                ++length;
+                name[ length ] = '.';
+                ++length;
+                if ( firstNameNode == NULL )
+                    firstNameNode = child;
+                needFlush = 1;
+                continue;
+            }
             if ( child->n_type == dotted_name )
             {
                 getDottedName( child, name, & length );
