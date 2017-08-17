@@ -19,14 +19,32 @@
 
 .PHONY: all clean
 
-PYTHON_INCLUDE=$(shell python-config --includes)
-PYTHON_LIBS=$(shell python-config --ldflags)
+
+# The python-config is not a very reliable choice to get the compiler
+# flags information. The name may depend from an interpreter version, e.g. it
+# could be python3-config or it could be picked system wide but not from a
+# virtual environment. So instead a python interpreter itself is used.
+
+PYTHON_INCLUDE=$(shell python -c 'import distutils.sysconfig; print(distutils.sysconfig.get_python_inc())')
 PYTHON_LIBS_PATH=$(shell python -c 'import distutils.sysconfig; print(distutils.sysconfig.get_config_var("LIBDIR"))')
 FLAGS=-Wall -O2 -ffast-math -fomit-frame-pointer -Wl,-rpath=${PYTHON_LIBS_PATH}
 
+# Typical python-config --ldflags output:
+# -lpython3.5m -lpthread -ldl -lutil -lm -Xlinker -export-dynamic
+
+# This will produce: -Xlinker -export-dynamic
+LINK_FOR_SHARED=$(shell python -c 'import distutils.sysconfig; print(distutils.sysconfig.get_config_var("LINKFORSHARED"))')
+
+# This will produce: -lpthread -ldl  -lutil
+LIBS=$(shell python -c 'import distutils.sysconfig; print(distutils.sysconfig.get_config_var("LIBS"))')
+
+# This will produce: -L. -lpython3.5m
+BLD_LIBRARY=$(shell python -c 'import distutils.sysconfig; print(distutils.sysconfig.get_config_var("BLDLIBRARY"))')
+
+
 all: cdmpyparser.c tree.cpp
 	cd .. && python setup.py build_ext --inplace
-	g++ ${FLAGS} -o tree  tree.cpp ${PYTHON_INCLUDE} -L${PYTHON_LIBS_PATH} ${PYTHON_LIBS}
+	g++ ${FLAGS} -o tree  tree.cpp -I${PYTHON_INCLUDE} -L${PYTHON_LIBS_PATH} ${BLD_LIBRARY} ${LIBS} ${LINK_FOR_SHARED}
 
 clean:
 	rm -rf *.o core.* _cdmpyparser.so build/ tree
@@ -36,4 +54,3 @@ check:
 
 localinstall:
 	cd .. && python setup.py install --user
-
