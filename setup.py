@@ -3,7 +3,7 @@
 #
 # cdm-pythonparser - python 2 content parser used in Codimension to provide
 # a structured view into python 2 files and character buffers
-# Copyright (C) 2010  Sergey Satskiy <sergey.satskiy@gmail.com>
+# Copyright (C) 2010-2017 Sergey Satskiy <sergey.satskiy@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -21,7 +21,7 @@
 
 
 from distutils.core import setup, Extension
-import os
+import os.path
 
 long_description = """Fast and comprehensive Python language parser.
 Written as a part of the Codimension project, this parser
@@ -29,19 +29,25 @@ aims at pulling the most data from Python sources while
 exceeding the speed of existing parsers."""
 
 try:
-	version = os.environ['CDM_PROJECT_BUILD_VERSION']
+    version = os.environ['CDM_PROJECT_BUILD_VERSION']
 except KeyError:
-	version = 'trunk'
+    version = 'trunk'
+    if os.path.exists('cdmpyparserversion.py'):
+        try:
+            import cdmpyparserversion
+            version = cdmpyparserversion.version
+        except:
+            pass
 
-setup( name = 'cdmpyparser',
-       description = 'Codimension Python Parser',
-       long_description = long_description,
-       version = version,
-       author = 'Sergey Satskiy',
-       author_email = 'sergey.satskiy@gmail.com',
-       url = 'http://satsky.spb.ru/codimension/doc/briefParserEng.php',
-       license = 'GPLv3',
-       classifiers = [
+setup(name='cdmpyparser',
+      description='Codimension Python Parser',
+      long_description=long_description,
+      version=version,
+      author='Sergey Satskiy',
+      author_email='sergey.satskiy@gmail.com',
+      url='http://codimension.org/documentation/cdmpyparser.html',
+      license='GPLv3',
+      classifiers=[
            'Development Status :: 5 - Production/Stable',
            'Intended Audience :: Developers',
            'License :: OSI Approved :: GNU General Public License (GPL)',
@@ -49,14 +55,12 @@ setup( name = 'cdmpyparser',
            'Programming Language :: C',
            'Programming Language :: Python',
            'Topic :: Software Development :: Libraries :: Python Modules'],
-       platforms = [ 'any' ],
-       py_modules  = [ 'cdmbriefparser' ],
-       ext_modules = [ Extension( '_cdmpyparser',
-                                  [ 'src/cdmpyparser.c'],
-                                  extra_compile_args = [ '-Wno-unused', '-fomit-frame-pointer',
-                                                         '-DCDM_PY_PARSER_VERSION="' + version + '"',
-                                                         '-ffast-math',
-                                                         '-O2',
-                                                         '-std=c99' ]
-                                ) ] )
-
+       platforms=['any'],
+       py_modules=['cdmpyparser'],
+       ext_modules=[Extension('_cdmpyparser',
+                              ['src/cdmpyparser.c'],
+                              extra_compile_args=['-Wno-unused', '-fomit-frame-pointer',
+                                                  '-DCDM_PY_PARSER_VERSION="' + version + '"',
+                                                  '-ffast-math',
+                                                  '-O2',
+                                                  '-std=c99'])])

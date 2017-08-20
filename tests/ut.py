@@ -22,7 +22,7 @@
 
 from __future__ import print_function
 
-import cdmbriefparser
+import cdmpyparser
 import unittest
 import os.path
 import sys
@@ -62,7 +62,7 @@ class CDMBriefParserTest( unittest.TestCase ):
     def meat( self, pythonFile, errorMsg ):
         " The test process meat "
 
-        info = cdmbriefparser.getBriefModuleInfoFromFile( pythonFile )
+        info = cdmpyparser.getBriefModuleInfoFromFile( pythonFile )
         if info.isOK != True:
             self.fail( "Error parsing the file " + pythonFile +
                        ". Option: directly from a file." )
@@ -71,7 +71,7 @@ class CDMBriefParserTest( unittest.TestCase ):
         content = f.read()
         f.close()
 
-        info = cdmbriefparser.getBriefModuleInfoFromMemory( content )
+        info = cdmpyparser.getBriefModuleInfoFromMemory( content )
         if info.isOK != True:
             self.fail( "Error parsing the file " + pythonFile +
                        ". Option: from memory." )
@@ -192,7 +192,7 @@ class CDMBriefParserTest( unittest.TestCase ):
         " Test errors "
 
         pythonFile = self.dir + "errors.py"
-        info = cdmbriefparser.getBriefModuleInfoFromFile( pythonFile )
+        info = cdmpyparser.getBriefModuleInfoFromFile( pythonFile )
         if info.isOK == True:
             self.fail( "Expected parsing error for file " + pythonFile +
                        ". Option: directly from file." )
@@ -213,7 +213,7 @@ class CDMBriefParserTest( unittest.TestCase ):
         " Test wrong indent "
 
         pythonFile = self.dir + "wrong_indent.py"
-        info = cdmbriefparser.getBriefModuleInfoFromFile( pythonFile )
+        info = cdmpyparser.getBriefModuleInfoFromFile( pythonFile )
         if info.isOK == True:
             self.fail( "Expected parsing error for file " + pythonFile +
                        ". Option: directly from file." )
@@ -234,7 +234,7 @@ class CDMBriefParserTest( unittest.TestCase ):
         " Test wrong stop of the parser "
 
         pythonFile = self.dir + "wrong_stop.py"
-        info = cdmbriefparser.getBriefModuleInfoFromFile( pythonFile )
+        info = cdmpyparser.getBriefModuleInfoFromFile( pythonFile )
         if info.isOK == True:
             self.fail( "Wrong stop test failed. Expected error. Option: "
                        "directly from file " + pythonFile )
@@ -256,7 +256,7 @@ class CDMBriefParserTest( unittest.TestCase ):
     def test_print( self ):
         " Test print statements "
         pythonFile = self.dir + "print.py"
-        info = cdmbriefparser.getBriefModuleInfoFromFile( pythonFile )
+        info = cdmpyparser.getBriefModuleInfoFromFile( pythonFile )
         if not info.isOK:
             outFileName = pythonFile.replace( ".py", ".out" )
             outFile = open( outFileName, "w" )
@@ -272,7 +272,7 @@ class CDMBriefParserTest( unittest.TestCase ):
     def test_print_func( self ):
         " Test print statements "
         pythonFile = self.dir + "print2.py"
-        info = cdmbriefparser.getBriefModuleInfoFromFile( pythonFile )
+        info = cdmpyparser.getBriefModuleInfoFromFile( pythonFile )
         if not info.isOK:
             outFileName = pythonFile.replace( ".py", ".out" )
             outFile = open( outFileName, "w" )
@@ -315,7 +315,7 @@ class CDMBriefParserTest( unittest.TestCase ):
         " Test for lone import keyword "
 
         pythonFile = self.dir + "loneimport.py"
-        info = cdmbriefparser.getBriefModuleInfoFromFile( pythonFile )
+        info = cdmpyparser.getBriefModuleInfoFromFile( pythonFile )
         if info.isOK == True:
             self.fail( "lone import test failure. Expected error. Option: "
                        "directly from file: " + pythonFile )
@@ -324,7 +324,7 @@ class CDMBriefParserTest( unittest.TestCase ):
         content = f.read()
         f.close()
 
-        info = cdmbriefparser.getBriefModuleInfoFromMemory( content )
+        info = cdmpyparser.getBriefModuleInfoFromMemory( content )
         if info.isOK == True:
             self.fail( "lone import test failure. Expected error. Option: "
                        "from memory. File: " + pythonFile )
@@ -333,7 +333,7 @@ class CDMBriefParserTest( unittest.TestCase ):
 
 # Run the unit tests
 if __name__ == '__main__':
-    print( "Testing parser version: " + cdmbriefparser.getVersion() )
-    print( "Module location: " + cdmbriefparser.__file__ )
+    print( "Testing parser version: " + cdmpyparser.getVersion() )
+    print( "Module location: " + cdmpyparser.__file__ )
     unittest.main()
 
