@@ -23,7 +23,7 @@
 import os, os.path, sys
 import datetime
 import pyclbr
-import cdmbriefparser
+import cdmpyparser
 import gc
 import time
 
@@ -69,7 +69,7 @@ def cdmpyparserTest(files):
     count = 0
     for item in files:
         # print("Processing " + item + " ...")
-        tempObj = cdmbriefparser.getBriefModuleInfoFromFile(item)
+        tempObj = cdmpyparser.getBriefModuleInfoFromFile(item)
         if SHOW_ERRORS:
             if not tempObj.isOK:
                 errorCount += 1
@@ -90,8 +90,8 @@ def deltaToFloat(delta):
 
 print("Speed test compares the time required for "
       "cdmpyparser and the standard pyclbr modules to collect module info.")
-print("cdmpyparser version: " + cdmbriefparser.getVersion())
-print("Module file: " + cdmbriefparser.__file__)
+print("cdmpyparser version: " + cdmpyparser.getVersion())
+print("Module file: " + cdmpyparser.__file__)
 print("")
 
 

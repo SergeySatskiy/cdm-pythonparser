@@ -1,4 +1,3 @@
-#
 # -*- coding: utf-8 -*-
 #
 # cdm-pythonparser - python 2 content parser used in Codimension to provide
@@ -20,13 +19,14 @@
 #
 
 
-from distutils.core import setup, Extension
+from setuptools import setup, Extension
 import os.path
+import sys
 
-long_description = """Fast and comprehensive Python language parser.
-Written as a part of the Codimension project, this parser
-aims at pulling the most data from Python sources while
-exceeding the speed of existing parsers."""
+description = 'Fast and comprehensive Python language parser. ' \
+    'Written as a part of the Codimension project, this parser ' \
+    'aims at pulling the most data from Python sources while ' \
+    'exceeding the speed of existing parsers.'
 
 try:
     version = os.environ['CDM_PROJECT_BUILD_VERSION']
@@ -39,13 +39,34 @@ except KeyError:
         except:
             pass
 
+try:
+    import pypandoc
+    converted = pypandoc.convert('README.md', 'rst').splitlines()
+    no_travis = [line for line in converted if 'travis-ci.org' not in line]
+    long_description = '\n'.join(no_travis)
+
+    # Pypi index does not like this link
+    long_description = long_description.replace('|Build Status|', '')
+except:
+    print('pypandoc package is not installed: the markdown '
+          'README.md convertion tor rst failed', file=sys.stderr)
+    import io
+    # pandoc is not installed, fallback to using raw contents
+    with io.open('README.md', encoding='utf-8') as f:
+        long_description = f.read()
+
+
+# install_requires=['pypandoc'] could be added but really it needs to only
+# at the time of submitting a package to Pypi so it is excluded from the
+# dependencies
 setup(name='cdmpyparser',
-      description='Codimension Python Parser',
+      description=description,
+      python_requires='>=3.5',
       long_description=long_description,
       version=version,
       author='Sergey Satskiy',
       author_email='sergey.satskiy@gmail.com',
-      url='http://codimension.org/documentation/cdmpyparser.html',
+      url='https://github.com/SergeySatskiy/cdm-pythonparser',
       license='GPLv3',
       classifiers=[
            'Development Status :: 5 - Production/Stable',
@@ -53,7 +74,7 @@ setup(name='cdmpyparser',
            'License :: OSI Approved :: GNU General Public License (GPL)',
            'Operating System :: POSIX :: Linux',
            'Programming Language :: C',
-           'Programming Language :: Python',
+           'Programming Language :: Python :: 3',
            'Topic :: Software Development :: Libraries :: Python Modules'],
        platforms=['any'],
        py_modules=['cdmpyparser'],

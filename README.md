@@ -1,5 +1,6 @@
-# cdm-pythonparser [![Build Status](https://travis-ci.org/SergeySatskiy/cdm-pythonparser.svg?branch=master)](https://travis-ci.org/SergeySatskiy/cdm-pythonparser)
-cdm-pythonparser repository contains a source code for a Python 2 and Python 3 extension module called cdmpyparser.
+## cdm-pythonparser [![Build Status](https://travis-ci.org/SergeySatskiy/cdm-pythonparser.svg?branch=master)](https://travis-ci.org/SergeySatskiy/cdm-pythonparser)
+[cdm-pythonparser repository](https://github.com/SergeySatskiy/cdm-pythonparser) contains a source code for
+a Python 2 and Python 3 extension module called `cdmpyparser`.
 The module exposes a couple of functions which basically take a file with a python code or a character buffer,
 parse it and provide back what is found in the code: functions, classes, global variables etc.
 
@@ -32,7 +33,7 @@ make localinstall
 The latest Python 2 supporting release is 2.0.1. Both pre-built modules and source code are available in the releases area.
 Here is a link: [latest Python 2 release 2.0.1](https://github.com/SergeySatskiy/cdm-pythonparser/releases/tag/v2.0.1).
 
-If you like to build a python 2 module from sources please follow these steps:
+If you like to build a Python 2 module from sources please follow these steps:
 
 ```shell
 cd
