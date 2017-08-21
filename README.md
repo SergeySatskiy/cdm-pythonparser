@@ -1,13 +1,22 @@
 # cdm-pythonparser [![Build Status](https://travis-ci.org/SergeySatskiy/cdm-pythonparser.svg?branch=master)](https://travis-ci.org/SergeySatskiy/cdm-pythonparser)
-cdm-pythonparser project is a Python 2 and Python 3 extension module.
-It takes a file with a python code (or a character buffer), parses it and
-provides back what is found in the code: functions, classes, global variables etc.
+cdm-pythonparser repository contains a source code for a Python 2 and Python 3 extension module called cdmpyparser.
+The module exposes a couple of functions which basically take a file with a python code or a character buffer,
+parse it and provide back what is found in the code: functions, classes, global variables etc.
 
-The parser is used in the [Codimension Python IDE](http://codimension.org) to show in a structured way a
-content of an arbitrary python code and for some other features.
+The module is used in the [Codimension Python IDE](http://codimension.org) to show in a structured way a
+content of an arbitrary python code and for some other features however, it could be used in other projects
+which need a python code retrospection.
 
 ## Python 3
-The master branch contains code for Python 3 (3.5 grammar is covered). There are no releases built yet however the code is quite stable. If you like to have a Python 3 module please follow these steps:
+The [master branch](https://github.com/SergeySatskiy/cdm-pythonparser) contains code for Python 3 (3.5/3.6 grammar is covered).
+
+The installation of the module is supported via pip:
+
+```shell
+pip install cdmpyparser
+```
+
+If you like to have the full source code which also includes a few utilities to play with, please follow these steps:
 
 ```shell
 git clone https://github.com/SergeySatskiy/cdm-pythonparser.git
@@ -18,7 +27,12 @@ make localinstall
 ```
 
 ## Python 2
-The latest Python 2 supporting release is 2.0.1. Both pre-built modules and source code are available in the releases area. Here is a link: [latest Python 2 release 2.0.1](https://github.com/SergeySatskiy/cdm-pythonparser/releases/tag/v2.0.1). If you like to build a python 2 module from sources please follow these steps:
+**Attention:** Python 2 version is not supported anymore.
+
+The latest Python 2 supporting release is 2.0.1. Both pre-built modules and source code are available in the releases area.
+Here is a link: [latest Python 2 release 2.0.1](https://github.com/SergeySatskiy/cdm-pythonparser/releases/tag/v2.0.1).
+
+If you like to build a python 2 module from sources please follow these steps:
 
 ```shell
 cd
@@ -32,7 +46,10 @@ make check
 ```
 
 ## Usage
-**Note:** the example output is provided for the Python 2 module. The output of the Python 3 module may be slightly different as more information is extracted. However, conceptually pretty much the same information is provided for both Python 2 and 3 implementations.
+**Note:** the example output is provided for the Python 2 module. The module name for Python 2 is `cdmbriefparser`.
+In Python 3 version the name of the module differs and is `cdmpyparser`.
+The output of the Python 3 module may be slightly different because more information is extracted.
+However, conceptually pretty much the same information is provided for both Python 2 and 3 implementations.
 
 Suppose there is the following file ~/my-file.py with the following content:
 
@@ -77,12 +94,12 @@ Docstring[8]: 'class docstring'
 >>>
 ```
 
-See the 'cdmbriefparser.py' file for the members which are supplied along with
+See the 'cdmbriefparser.py' (Python 2) or 'cdmpyparser.py' (Python3) file for the members which are supplied along with
 all the recognized items.
 
 
 ## Comparison to the standard pyclbr module
-**Note:** the comparison results are provided for the Python 2 module. The Python 3 module yeilds pretty much the same results in terms of performance while extracts more information as the grammar was extended for Python 3.
+**Note:** the comparison results are provided for the Python 2 module. The Python 3 module yeilds pretty much the same results in terms of performance while extracts more information because the grammar was extended for Python 3.
 
 The table below shows the comparison between the standard `pyclbr` module and
 the Codimension's `cdmbriefparser` module.
