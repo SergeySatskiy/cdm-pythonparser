@@ -49,7 +49,7 @@ try:
     long_description = long_description.replace('|Build Status|', '')
 except:
     print('pypandoc package is not installed: the markdown '
-          'README.md convertion tor rst failed', file=sys.stderr)
+          'README.md convertion to rst failed', file=sys.stderr)
     import io
     # pandoc is not installed, fallback to using raw contents
     with io.open('README.md', encoding='utf-8') as f:
