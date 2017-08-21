@@ -216,7 +216,8 @@ class Decorator(ModuleInfoBase):
                     first = False
                 else:
                     val += ", " + item
-            val += " )'"
+            val += " )"
+        val += "'"
         return val
 
     def getDisplayName(self):

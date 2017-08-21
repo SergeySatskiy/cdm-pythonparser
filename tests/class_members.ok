@@ -19,4 +19,4 @@ Class[16:1:16:7:219:16:8]: 'D'
 Class[24:1:24:7:447:24:8]: 'F'
     Function[27:5:27:9:477:27:24]: 'method'
     Argument: 'first'
-    Decorator[26:6:456]: 'staticmethod
+    Decorator[26:6:456]: 'staticmethod'
