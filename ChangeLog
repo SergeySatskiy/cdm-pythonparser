@@ -1,3 +1,8 @@
+2017 Nov 16 Sergey Satskiy <sergey.satskiy@gmail.com>
+
+* Release 3.0.2
+* Bug fix: correct handling of the docstrings which start with 'r' or 'u'
+
 2017 Aug 21 Sergey Satskiy <sergey.satskiy@gmail.com>
 
 * Release v.3.0.1

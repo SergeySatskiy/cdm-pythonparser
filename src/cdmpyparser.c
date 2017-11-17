@@ -659,7 +659,8 @@ static void  collectTestString( node *  from, char *  buffer, int *  length )
 }
 
 
-/* returns 1 or 3, i.e. the number of quotes used in a string literal part */
+/* returns 1, 2, 3 or 4,
+   i.e. the number of leading quotes used in a string literal part */
 static size_t getStringLiteralPrefixLength( node *  tree )
 {
     /* tree must be of STRING type */
@@ -668,6 +669,22 @@ static size_t getStringLiteralPrefixLength( node *  tree )
         return 3;
     if ( strncmp( tree->n_str, "'''", 3 ) == 0 )
         return 3;
+    if ( strncmp( tree->n_str, "r\"\"\"", 4 ) == 0 )
+        return 4;
+    if ( strncmp( tree->n_str, "r'''", 4 ) == 0 )
+        return 4;
+    if ( strncmp( tree->n_str, "u\"\"\"", 4 ) == 0 )
+        return 4;
+    if ( strncmp( tree->n_str, "u'''", 4 ) == 0 )
+        return 4;
+    if ( strncmp( tree->n_str, "r\"", 2 ) == 0 )
+        return 2;
+    if ( strncmp( tree->n_str, "r'", 2 ) == 0 )
+        return 2;
+    if ( strncmp( tree->n_str, "u\"", 2 ) == 0 )
+        return 2;
+    if ( strncmp( tree->n_str, "u'", 2 ) == 0 )
+        return 2;
     return 1;
 }
 
@@ -731,7 +748,13 @@ static void checkForDocstring( node *                       tree,
             return;
 
         charsToSkip = getStringLiteralPrefixLength( stringChild );
-        charsToCopy = strlen( stringChild->n_str ) - 2 * charsToSkip;
+        charsToCopy = strlen( stringChild->n_str ) - charsToSkip;
+        if ( charsToSkip == 2 )
+            charsToCopy -= 1;
+        else if ( charsToSkip == 4 )
+            charsToCopy -= 3;
+        else
+            charsToCopy -= charsToSkip;
 
         if ( collected + charsToCopy + 1 > MAX_DOCSTRING_SIZE )
         {
