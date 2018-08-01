@@ -1,3 +1,8 @@
+2018 Aug 01 Sergey Satskiy <sergey.satskiy@gmail.com>
+
+* Release 3.0.3
+* Be pep8 compliant when display names are formed
+
 2017 Nov 16 Sergey Satskiy <sergey.satskiy@gmail.com>
 
 * Release 3.0.2

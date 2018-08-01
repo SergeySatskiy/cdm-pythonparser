@@ -224,7 +224,7 @@ class Decorator(ModuleInfoBase):
         """Provides a name for display purpose"""
         displayName = self.name
         if self.arguments:
-            displayName += "( " + ", ".join(self.arguments) + " )"
+            displayName += "(" + ", ".join(self.arguments) + ")"
         return displayName
 
 
@@ -331,12 +331,10 @@ class Function(ModuleInfoBase):
         first = True
         for arg in self.arguments:
             if first:
-                displayName += " " + str(arg)
+                displayName += str(arg)
                 first = False
             else:
                 displayName += ", " + str(arg)
-        if self.arguments:
-            displayName += " "
         displayName += ")"
         if self.returnAnnotation is not None:
             displayName += ' -> ' + self.returnAnnotation
@@ -400,7 +398,7 @@ class Class(ModuleInfoBase):
         " Provides a name for display purpose "
         displayName = self.name
         if self.base:
-            displayName += "( " + ", ".join(self.base) + " )"
+            displayName += "(" + ", ".join(self.base) + ")"
         return displayName
 
 
