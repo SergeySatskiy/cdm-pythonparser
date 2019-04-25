@@ -41,15 +41,15 @@ except KeyError:
 
 try:
     import pypandoc
-    converted = pypandoc.convert('README.md', 'rst').splitlines()
+    converted = pypandoc.convert_file('README.md', 'rst').splitlines()
     no_travis = [line for line in converted if 'travis-ci.org' not in line]
     long_description = '\n'.join(no_travis)
 
     # Pypi index does not like this link
     long_description = long_description.replace('|Build Status|', '')
-except:
+except Exception as exc:
     print('pypandoc package is not installed: the markdown '
-          'README.md convertion to rst failed', file=sys.stderr)
+          'README.md convertion to rst failed: ' + str(exc), file=sys.stderr)
     import io
     # pandoc is not installed, fallback to using raw contents
     with io.open('README.md', encoding='utf-8') as f:
