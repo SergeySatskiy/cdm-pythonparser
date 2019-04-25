@@ -239,8 +239,11 @@ string  nodeTypeToString( int  nodeType  )
         case ATEQUAL:           return "ATEQUAL";
         case RARROW:            return "RARROW";
         case ELLIPSIS:          return "ELLIPSIS";
+        #if PY_MINOR_VERSION < 7
+        // The AWAIT and ASYNC became the proper keywords in 3.7
         case AWAIT:             return "AWAIT";
         case ASYNC:             return "ASYNC";
+        #endif
         #endif
         default:                break;
     }
@@ -314,7 +317,14 @@ int main( int  argc, char *  argv[] )
     stat( argv[1], &st );
 
     char            buffer[st.st_size + 2];
-    fread( buffer, st.st_size, 1, f );
+    size_t          itemCount = fread( buffer, st.st_size, 1, f );
+    if (itemCount != 1)
+    {
+        cerr << "Unexpected number of read items. Must be 1, received "
+             << itemCount << endl;
+        return EXIT_FAILURE;
+    }
+
     buffer[ st.st_size ] = '\n';
     buffer[ st.st_size + 1 ] = '\0';
     fclose( f );
