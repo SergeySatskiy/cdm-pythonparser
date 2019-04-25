@@ -1,3 +1,9 @@
+2019 Apr 24 Sergey Satskiy <sergey.satskiy@gmail.com>
+
+* Release 3.1.0
+* Python 3.7 support
+* Minor fixes in setup.py
+
 2018 Aug 01 Sergey Satskiy <sergey.satskiy@gmail.com>
 
 * Release 3.0.3
