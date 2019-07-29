@@ -27,7 +27,13 @@
 
 PYTHON_INCLUDE=$(shell python -c 'import distutils.sysconfig; print(distutils.sysconfig.get_python_inc())')
 PYTHON_LIBS_PATH=$(shell python -c 'import distutils.sysconfig; print(distutils.sysconfig.get_config_var("LIBDIR"))')
-FLAGS=-Wall -O2 -ffast-math -fomit-frame-pointer -Wl,-rpath=${PYTHON_LIBS_PATH}
+FLAGS=-Wall -O2 -ffast-math -fomit-frame-pointer
+
+# MacOS g++ does not like -rpath ...
+OS_NAME=$(shell uname -s)
+ifeq ($(OS_NAME),Linux)
+FLAGS += -Wl,-rpath=${PYTHON_LIBS_PATH}
+endif
 
 # Typical python-config --ldflags output:
 # -lpython3.5m -lpthread -ldl -lutil -lm -Xlinker -export-dynamic

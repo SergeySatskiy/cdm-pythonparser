@@ -1,3 +1,8 @@
+XXXX XXX XX Sergey Satskiy <sergey.satskiy@gmail.com>
+
+* Release X.X.X
+* Make it buildable for MacOS with clang
+
 2019 Apr 24 Sergey Satskiy <sergey.satskiy@gmail.com>
 
 * Release 3.1.0
