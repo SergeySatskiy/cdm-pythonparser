@@ -61,7 +61,7 @@ except Exception as exc:
 # dependencies
 setup(name='cdmpyparser',
       description=description,
-      python_requires='>=3.5',
+      python_requires='>=3.5, <3.8',
       long_description=long_description,
       version=version,
       author='Sergey Satskiy',
