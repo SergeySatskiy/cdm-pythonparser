@@ -17,11 +17,14 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-.PHONY: all clean check localinstall
+.PHONY: all tree clean check localinstall
 
 
 all:
 	cd src && $(MAKE) all
+
+tree:
+	cd src && $(MAKE) tree
 
 clean:
 	cd src && $(MAKE) clean

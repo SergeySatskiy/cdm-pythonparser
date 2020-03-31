@@ -264,14 +264,30 @@ std::string  nodeTypeToString( int  nodeType  )
         #if PY_MAJOR_VERSION == 2
         case BACKQUOTE:         return "BACKQUOTE";
         #else
-        case ATEQUAL:           return "ATEQUAL";
-        case RARROW:            return "RARROW";
-        case ELLIPSIS:          return "ELLIPSIS";
-        #if PY_MINOR_VERSION < 7
-        // The AWAIT and ASYNC became the proper keywords in 3.7
-        case AWAIT:             return "AWAIT";
-        case ASYNC:             return "ASYNC";
-        #endif
+            case ATEQUAL:           return "ATEQUAL";
+            case RARROW:            return "RARROW";
+            case ELLIPSIS:          return "ELLIPSIS";
+            #if PY_MINOR_VERSION < 7
+            // The AWAIT and ASYNC became the proper keywords in 3.7
+            case AWAIT:             return "AWAIT";
+            case ASYNC:             return "ASYNC";
+            #endif
+            #if PY_MINOR_VERSION >= 8
+            case namedexpr_test:    return "namedexpr_test";
+            case func_body_suite:   return "func_body_suite";
+            case func_type_input:   return "func_type_input";
+            case func_type:         return "func_type";
+            case typelist:          return "typelist";
+
+            case COLONEQUAL:        return "COLONEQUAL";
+
+            // Really strange! AWAIT and ASYNC have appeared again!
+            case AWAIT:             return "AWAIT";
+            case ASYNC:             return "ASYNC";
+
+            case TYPE_IGNORE:       return "TYPE_IGNORE";
+            case TYPE_COMMENT:      return "TYPE_COMMENT";
+            #endif
         #endif
         default:                break;
     }

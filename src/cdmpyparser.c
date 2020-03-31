@@ -334,16 +334,19 @@ callOnWhat( PyObject *  onWhat, const char *  name, int  length,
 
 static void
 callOnDocstring( PyObject *  onDocstring, const char *  doc, int  length,
-                 int  line_ )
+                 int  startLine_, int  endLine_ )
 {
     PyObject *  docstring = PyString_FromStringAndSize( doc, length );
-    PyObject *  line = PyInt_FromLong( line_ );
+    PyObject *  startLine = PyInt_FromLong( startLine_ );
+    PyObject *  endLine = PyInt_FromLong( endLine_ );
     PyObject *  ret = PyObject_CallFunctionObjArgs( onDocstring, docstring,
-                                                    line, NULL );
+                                                    startLine, endLine,
+                                                    NULL );
 
     if ( ret != NULL )
         Py_DECREF( ret );
-    Py_DECREF( line );
+    Py_DECREF( endLine );
+    Py_DECREF( startLine );
     Py_DECREF( docstring );
     return;
 }
@@ -739,8 +742,12 @@ static void checkForDocstring( node *                       tree,
     int             collected = 0;
     int             charsToSkip;
     int             charsToCopy;
-    node *          stringChild;
+    node *          stringChild = NULL;
     n = child->n_nchildren;
+
+    node *          firstStringChild = NULL;
+    int             needAdjustFirst = 0;    // for python 3.7
+    int             needAdjustLast = 0;     // for python 3.8
     for ( int  k = 0; k < n; ++k )
     {
         stringChild = & ( child->n_child[ k ] );
@@ -755,6 +762,20 @@ static void checkForDocstring( node *                       tree,
             charsToCopy -= 3;
         else
             charsToCopy -= charsToSkip;
+
+        #if PY_MAJOR_VERSION == 3 && PY_MINOR_VERSION == 8
+        if ( charsToSkip >= 3 )
+            needAdjustLast = 1;
+        #endif
+
+        if ( k == 0 )
+        {
+            firstStringChild = stringChild;
+            #if PY_MAJOR_VERSION == 3 && PY_MINOR_VERSION <= 7
+            if ( charsToSkip >= 3 )
+                needAdjustFirst = 1;
+            #endif
+        }
 
         if ( collected + charsToCopy + 1 > MAX_DOCSTRING_SIZE )
         {
@@ -771,9 +792,55 @@ static void checkForDocstring( node *                       tree,
         collected += charsToCopy;
     }
 
+    // Python 3.7 and earlier -> reports the last line
+    // Python 3.8             -> reports the first line
+    int     firstLine = firstStringChild->n_lineno;
+    int     lastLine = stringChild->n_lineno;
+
+    if ( needAdjustFirst != 0 )
+    {
+        for ( int  index = 0; ; ++index )
+        {
+            char    current = firstStringChild->n_str[index];
+            if ( current == '\0' )
+                break;
+            if ( current == '\r' )
+            {
+                if ( firstStringChild->n_str[index + 1] == '\n' )
+                {
+                    ++index;
+                }
+                --firstLine;
+                continue;
+            }
+            if ( current == '\n' )
+                --firstLine;
+        }
+    }
+    if ( needAdjustLast != 0 )
+    {
+        for ( int  index = 0; ; ++index )
+        {
+            char    current = stringChild->n_str[index];
+            if ( current == '\0' )
+                break;
+            if ( current == '\r' )
+            {
+                if ( stringChild->n_str[index + 1] == '\n' )
+                {
+                    ++index;
+                }
+                ++lastLine;
+                continue;
+            }
+            if ( current == '\n' )
+                ++lastLine;
+        }
+    }
+
     buffer[ collected ] = 0;
     callOnDocstring( callbacks->onDocstring,
-                     buffer, collected, child->n_lineno );
+                     buffer, collected, firstLine, lastLine );
     return;
 }
 
@@ -1271,12 +1338,18 @@ static void processAssign( node *              tree,
     for ( int  k = 0; k < tree->n_nchildren; ++k )
     {
         child = & ( tree->n_child[ k ] );
+        #if PY_MAJOR_VERSION == 3 && PY_MINOR_VERSION == 8
+        if ( child->n_type == namedexpr_test ||
+             child->n_type == test )
+        #else
         if ( child->n_type == test )
+        #endif
         {
             node *      powerNode = skipToNode( child, power );
             child = skipToNode( powerNode, atom );
             if ( child == NULL )
                 continue;
+
             /* trailer means it is usage, not the initialization */
             node *      atomExprNode = findChildOfType( powerNode, atom_expr );
             if ( atomExprNode != NULL )
@@ -1330,7 +1403,12 @@ static void processInstanceMember( node *                      tree,
     for ( int  k = 0; k < n; ++k )
     {
         child = & ( tree->n_child[ k ] );
+        #if PY_MAJOR_VERSION == 3 && PY_MINOR_VERSION == 8
+        if ( child->n_type == namedexpr_test ||
+             child->n_type == test )
+        #else
         if ( child->n_type == test )
+        #endif
         {
             node *      powerNode = skipToNode( child, power );
             child = skipToNode( powerNode, atom );

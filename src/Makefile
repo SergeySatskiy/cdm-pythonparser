@@ -48,8 +48,10 @@ LIBS=$(shell python -c 'import distutils.sysconfig; print(distutils.sysconfig.ge
 BLD_LIBRARY=$(shell python -c 'import distutils.sysconfig; print(distutils.sysconfig.get_config_var("BLDLIBRARY"))')
 
 
-all: cdmpyparser.c tree.cpp
+all: cdmpyparser.c
 	cd .. && python setup.py build_ext --inplace
+
+tree: tree.cpp
 	g++ ${FLAGS} -o tree  tree.cpp -I${PYTHON_INCLUDE} -L${PYTHON_LIBS_PATH} ${BLD_LIBRARY} ${LIBS} ${LINK_FOR_SHARED}
 
 clean:

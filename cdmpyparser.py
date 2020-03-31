@@ -22,7 +22,6 @@
 from sys import maxsize
 import _cdmpyparser
 
-
 def trim_docstring(docstring):
     """Taken from http://www.python.org/dev/peps/pep-0257/"""
     if not docstring:
@@ -57,7 +56,7 @@ def trim_docstring(docstring):
     return '\n'.join(lines)
 
 
-class ModuleInfoBase(object):
+class ModuleInfoBase:
 
     """Common part for the module information"""
 
@@ -228,18 +227,24 @@ class Decorator(ModuleInfoBase):
         return displayName
 
 
-class Docstring(object):
+class Docstring:
 
     """Holds a docstring information"""
 
-    __slots__ = ["line", "text"]
+    __slots__ = ["startLine", "endLine", "line", "text"]
 
-    def __init__(self, text, line):
-        self.line = line
+    def __init__(self, text, startLine, endLine):
+        self.startLine = startLine
+        self.endLine = endLine
         self.text = text
 
+        # Compatibility: modules for 3.7 and below reported the end line only
+        # under the 'line' name
+        self.line = endLine
+
     def __str__(self):
-        return "Docstring[" + str(self.line) + "]: '" + self.text + "'"
+        return "Docstring[" + str(self.startLine) + ":" + \
+            str(self.endLine) + "]: '" + self.text + "'"
 
 
 class Argument:
@@ -402,7 +407,7 @@ class Class(ModuleInfoBase):
         return displayName
 
 
-class BriefModuleInfo(object):
+class BriefModuleInfo:
 
     """Holds a single module content information"""
 
@@ -572,13 +577,14 @@ class BriefModuleInfo(object):
         """Memorizes a decorator argument"""
         self.__lastDecorators[-1].arguments.append(name)
 
-    def _onDocstring(self, docstr, line):
+    def _onDocstring(self, docstr, startLine, endLine):
         """Memorizes a function/class/module docstring"""
         if self.objectsStack:
             self.objectsStack[-1].docstring = \
-                Docstring(trim_docstring(docstr), line)
+                Docstring(trim_docstring(docstr), startLine, endLine)
         else:
-            self.docstring = Docstring(trim_docstring(docstr), line)
+            self.docstring = Docstring(trim_docstring(docstr),
+                                       startLine, endLine)
 
     def _onArgument(self, name, annotation):
         """Memorizes a function argument"""

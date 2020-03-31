@@ -1,3 +1,11 @@
+2020 Apr XX Sergey Satskiy <sergey.satskiy@gmail.com>
+
+* Release 3.2.0
+* Python 3.8 support
+* Docstrings now provide both start line and end line. Backward compatibilty is
+  preserved
+* Do not build the 'tree' utility by default
+
 2019 Jul 29 Sergey Satskiy <sergey.satskiy@gmail.com>
 
 * Release 3.1.1
