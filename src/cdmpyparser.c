@@ -680,6 +680,10 @@ static size_t getStringLiteralPrefixLength( node *  tree )
         return 4;
     if ( strncmp( tree->n_str, "u'''", 4 ) == 0 )
         return 4;
+    if ( strncmp( tree->n_str, "f\"\"\"", 4 ) == 0 )
+        return 4;
+    if ( strncmp( tree->n_str, "f'''", 4 ) == 0 )
+        return 4;
     if ( strncmp( tree->n_str, "r\"", 2 ) == 0 )
         return 2;
     if ( strncmp( tree->n_str, "r'", 2 ) == 0 )
@@ -687,6 +691,10 @@ static size_t getStringLiteralPrefixLength( node *  tree )
     if ( strncmp( tree->n_str, "u\"", 2 ) == 0 )
         return 2;
     if ( strncmp( tree->n_str, "u'", 2 ) == 0 )
+        return 2;
+    if ( strncmp( tree->n_str, "f\"", 2 ) == 0 )
+        return 2;
+    if ( strncmp( tree->n_str, "f'", 2 ) == 0 )
         return 2;
     return 1;
 }
