@@ -1,3 +1,8 @@
+2020 Apr 07 Sergey Satskiy <sergey.satskiy@gmail.com>
+
+* Release 3.2.1
+* Fix: incorrect python version spec in setup.py
+
 2020 Apr 06 Sergey Satskiy <sergey.satskiy@gmail.com>
 
 * Release 3.2.0
