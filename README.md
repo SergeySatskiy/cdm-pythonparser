@@ -10,7 +10,7 @@ content of an arbitrary python code and for some other features however, it coul
 which need a python code retrospection.
 
 ## Python 3 Installation and Building
-The [master branch](https://github.com/SergeySatskiy/cdm-pythonparser) on github contains code for Python 3 (3.5/3.6/3.7 grammar is covered).
+The [master branch](https://github.com/SergeySatskiy/cdm-pythonparser) on github contains code for Python 3 (3.5/3.6/3.7/3.8 grammar is covered).
 
 The module can be installed using pip:
 
