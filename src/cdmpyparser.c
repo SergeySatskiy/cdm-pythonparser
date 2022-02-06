@@ -1125,6 +1125,11 @@ static int processDecor( node *                        tree,
         getDottedName( nameNode, name, & length );
 
         node *      argsNode = findChildOfType( tree, arglist );
+        if ( argsNode == NULL )
+        {
+            /* Point to the '(' in case of @decor() */
+            argsNode = findChildOfType( tree, LPAR );
+        }
     #endif
 
     callOnDecorator( callbacks->onDecorator,
@@ -1143,7 +1148,6 @@ static int processDecor( node *                        tree,
     {
         /* There are decorator arguments */
 
-        #if PY_MAJOR_VERSION == 3 && PY_MINOR_VERSION == 9
         /* Special case:
          * if a decorator has no arguments and looks like @decor()
          * then the argsNode points to LPAR
@@ -1155,7 +1159,6 @@ static int processDecor( node *                        tree,
             callOnArg( callbacks->onDecoratorArgument, arg, length );
             return staticMethod;
         }
-        #endif
 
         node *      child;
         for ( int  k = 0; k < argsNode->n_nchildren; ++k )
