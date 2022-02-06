@@ -581,6 +581,37 @@ static node *  findChildOfType( node *  from, int  type )
 }
 
 
+/* It is used for 3.9 and up
+ * Returns a pointer to:
+ * - arglist if found in the last trailer
+ * - LPAR if it is the case with zero arguments like @decor()
+ * - NULL if there are no arguments at all
+ */
+static node *  findDecoratorArgsNode( node *  atomExprNode )
+{
+    int         n = atomExprNode->n_nchildren;
+    int         lastChildIndex = n - 1;
+
+    if ( lastChildIndex < 0 )
+        return NULL;
+
+    node *      lastChild = & atomExprNode->n_child[ lastChildIndex ];
+    if ( lastChild->n_type != trailer )
+        return NULL;
+
+    if ( lastChild->n_nchildren < 2 )
+        return NULL;
+    if ( lastChild->n_child[ 0 ].n_type != LPAR )
+        return NULL;
+    if ( lastChild->n_child[ 1 ].n_type == RPAR )
+        return & lastChild->n_child[ 0 ];
+    if ( lastChild->n_child[ 1 ].n_type != arglist )
+        return NULL;
+
+    return & lastChild->n_child[ 1 ];
+}
+
+
 /* Collects the string parts of the test node recursively.  */
 /* It is used in:                                           */
 /* - the default argument values                            */
@@ -591,74 +622,115 @@ static void  collectTestString( node *  from, char *  buffer, int *  length )
 {
     if ( from->n_str != NULL )
     {
-        if ( from->n_str[ 0 ] == ')' ||
-             from->n_str[ 0 ] == ']' ||
-             from->n_str[ 0 ] == '}' )
+        int     len = 0;
+        switch ( from->n_type )
         {
-            buffer[ *length ] = ' ';
-            ++(*length);
-            buffer[ *length ] = from->n_str[ 0 ];
-            ++(*length);
+            case LPAR:
+            case RPAR:
+            case LSQB:
+            case RSQB:
+            case LBRACE:
+            case RBRACE:
+            case EQUAL:
+            case TILDE:
+            case DOT:
+                buffer[ *length ] = from->n_str[ 0 ];
+                ++(*length);
+                break;
+            case COMMA:
+                buffer[ *length ] = ',';
+                ++(*length);
+                buffer[ *length ] = ' ';
+                ++(*length);
+                break;
+            case MINUS:
+            case PLUS:
+            case SLASH:
+            case STAR:
+            case PERCENT:
+            case LESS:
+            case GREATER:
+            case VBAR:
+            case AMPER:
+            case CIRCUMFLEX:
+                buffer[ *length ] = ' ';
+                ++(*length);
+                buffer[ *length ] = from->n_str[ 0 ];
+                ++(*length);
+                buffer[ *length ] = ' ';
+                ++(*length);
+                break;
+            case COLON:
+                buffer[ *length ] = from->n_str[ 0 ];
+                ++(*length);
+                buffer[ *length ] = ' ';
+                ++(*length);
+                break;
+            case DOUBLESTAR:
+            case DOUBLESLASH:
+            case EQEQUAL:
+            case GREATEREQUAL:
+            case LESSEQUAL:
+            case NOTEQUAL:
+            case LEFTSHIFT:
+            case RIGHTSHIFT:
+                buffer[ *length ] = ' ';
+                ++(*length);
+                buffer[ *length ] = from->n_str[ 0 ];
+                ++(*length);
+                buffer[ *length ] = from->n_str[ 1 ];
+                ++(*length);
+                buffer[ *length ] = ' ';
+                ++(*length);
+                break;
+            default:
+                if ( strcmp( from->n_str, "not" ) == 0 ||
+                     strcmp( from->n_str, "in" ) == 0 ||
+                     strcmp( from->n_str, "is" ) == 0 ||
+                     strcmp( from->n_str, "or" ) == 0 ||
+                     strcmp( from->n_str, "and" ) == 0 ||
+                     strcmp( from->n_str, "if" ) == 0 ||
+                     strcmp( from->n_str, "elif" ) == 0 ||
+                     strcmp( from->n_str, "else" ) == 0 )
+                {
+                    buffer[ *length ] = ' ';
+                    ++(*length);
+                    len = strlen( from->n_str );
+                    memcpy( & ( buffer[ *length ] ), from->n_str, len );
+                    *length += len;
+                    buffer[ *length ] = ' ';
+                    ++(*length);
+                    break;
+                }
+
+                /* Really default case: copy as is */
+                len = strlen( from->n_str );
+                memcpy( & ( buffer[ *length ] ), from->n_str, len );
+                *length += len;
         }
-        else if ( from->n_str[ 0 ] == '(' ||
-                  from->n_str[ 0 ] == '[' ||
-                  from->n_str[ 0 ] == '{' ||
-                  from->n_str[ 0 ] == ',' )
-        {
-            buffer[ *length ] = from->n_str[ 0 ];
-            ++(*length);
-            buffer[ *length ] = ' ';
-            ++(*length);
-        }
-        else if ( strcmp( from->n_str, "-" ) == 0 ||
-                  strcmp( from->n_str, "+" ) == 0 ||
-                  strcmp( from->n_str, "/" ) == 0 ||
-                  strcmp( from->n_str, "*" ) == 0 ||
-                  strcmp( from->n_str, ":" ) == 0 ||
-                  strcmp( from->n_str, "**" ) == 0 ||
-                  strcmp( from->n_str, "~" ) == 0 ||
-                  strcmp( from->n_str, "%" ) == 0 ||
-                  strcmp( from->n_str, "//" ) == 0 ||
-                  strcmp( from->n_str, "not" ) == 0 ||
-                  strcmp( from->n_str, "<" ) == 0 ||
-                  strcmp( from->n_str, ">" ) == 0 ||
-                  strcmp( from->n_str, "==" ) == 0 ||
-                  strcmp( from->n_str, ">=" ) == 0 ||
-                  strcmp( from->n_str, "<=" ) == 0 ||
-                  strcmp( from->n_str, "<>" ) == 0 ||
-                  strcmp( from->n_str, "!=" ) == 0 ||
-                  strcmp( from->n_str, "in" ) == 0 ||
-                  strcmp( from->n_str, "is" ) == 0 ||
-                  strcmp( from->n_str, "|" ) == 0 ||
-                  strcmp( from->n_str, "^" ) == 0 ||
-                  strcmp( from->n_str, "&" ) == 0 ||
-                  strcmp( from->n_str, "<<" ) == 0 ||
-                  strcmp( from->n_str, ">>" ) == 0 ||
-                  strcmp( from->n_str, "or" ) == 0 ||
-                  strcmp( from->n_str, "and" ) == 0 ||
-                  strcmp( from->n_str, "if" ) == 0 ||
-                  strcmp( from->n_str, "elif" ) == 0 ||
-                  strcmp( from->n_str, "else" ) == 0 )
-        {
-            buffer[ *length ] = ' ';
-            ++(*length);
-            int     len = strlen( from->n_str );
-            memcpy( & ( buffer[ *length ] ), from->n_str, len );
-            *length += len;
-            buffer[ *length ] = ' ';
-            ++(*length);
-        }
-        else
-        {
-            int     len = strlen( from->n_str );
-            memcpy( & ( buffer[ *length ] ), from->n_str, len );
-            *length += len;
-        }
+
     }
 
     int         n = from->n_nchildren;
     for ( int  k = 0; k < n; ++k )
         collectTestString( & ( from->n_child[ k ] ), buffer, length );
+}
+
+
+static void getAtomDecoratorName( node *  atomExprNode,
+                                  char *  name,
+                                  int  *  length,
+                                  node *  argsNode )
+{
+    int         n = atomExprNode->n_nchildren;
+    if ( argsNode != NULL )
+        --n;    /* The decorator has arguments so the last child must not be
+                   participating in building the name */
+
+    for ( int  k = 0; k < n; ++k )
+    {
+        collectTestString( & atomExprNode->n_child[ k ], name, length );
+    }
 }
 
 
@@ -755,7 +827,7 @@ static void checkForDocstring( node *                       tree,
 
     node *          firstStringChild = NULL;
     int             needAdjustFirst = 0;    // for python 3.7
-    int             needAdjustLast = 0;     // for python 3.8
+    int             needAdjustLast = 0;     // for python >= 3.8
     for ( int  k = 0; k < n; ++k )
     {
         stringChild = & ( child->n_child[ k ] );
@@ -771,7 +843,7 @@ static void checkForDocstring( node *                       tree,
         else
             charsToCopy -= charsToSkip;
 
-        #if PY_MAJOR_VERSION == 3 && PY_MINOR_VERSION == 8
+        #if PY_MAJOR_VERSION == 3 && (PY_MINOR_VERSION == 8 || PY_MINOR_VERSION == 9)
         if ( charsToSkip >= 3 )
             needAdjustLast = 1;
         #endif
@@ -801,7 +873,7 @@ static void checkForDocstring( node *                       tree,
     }
 
     // Python 3.7 and earlier -> reports the last line
-    // Python 3.8             -> reports the first line
+    // Python 3.8 and later   -> reports the first line
     int     firstLine = firstStringChild->n_lineno;
     int     lastLine = stringChild->n_lineno;
 
@@ -1025,15 +1097,35 @@ static int processDecor( node *                        tree,
                          struct instanceCallbacks *    callbacks,
                          int *                         lineShifts )
 {
-    int     staticMethod = 0;
+    int         staticMethod = 0;
     assert( tree->n_type == decorator );
-
-    node *      nameNode = findChildOfType( tree, dotted_name );
-    assert( nameNode != NULL );
 
     char        name[ MAX_DOTTED_NAME_LENGTH ];
     int         length = 0;
-    getDottedName( nameNode, name, & length );
+
+    #if PY_MAJOR_VERSION == 3 && PY_MINOR_VERSION == 9
+        /* The 3.9 grammar introduces a completely different structure of the
+         * tree. Now it could be an arbitrary expression.
+         */
+
+        node *      namedExprTestNode = findChildOfType( tree, namedexpr_test );
+
+        /* The nameNode name is not very good; actually it is the atom_tree
+         * however the common code below looks better with nameNode
+         */
+        node *      nameNode = skipToNode( namedExprTestNode, atom_expr );
+        assert( nameNode != NULL );
+
+        node *      argsNode = findDecoratorArgsNode( nameNode );
+        getAtomDecoratorName( nameNode, name, & length, argsNode );
+    #else
+        node *      nameNode = findChildOfType( tree, dotted_name );
+        assert( nameNode != NULL );
+
+        getDottedName( nameNode, name, & length );
+
+        node *      argsNode = findChildOfType( tree, arglist );
+    #endif
 
     callOnDecorator( callbacks->onDecorator,
                      name, length,
@@ -1041,15 +1133,30 @@ static int processDecor( node *                        tree,
                      nameNode->n_col_offset + 1,    /* Make it 1-based */
                      lineShifts[ nameNode->n_lineno ] + nameNode->n_col_offset );
 
+    name[length] = '\0';
     if ( strcmp( name, "staticmethod" ) == 0 )
     {
         staticMethod = 1;
     }
 
-    node *      argsNode = findChildOfType( tree, arglist );
     if ( argsNode != NULL )
     {
         /* There are decorator arguments */
+
+        #if PY_MAJOR_VERSION == 3 && PY_MINOR_VERSION == 9
+        /* Special case:
+         * if a decorator has no arguments and looks like @decor()
+         * then the argsNode points to LPAR
+         */
+        if ( argsNode->n_type == LPAR )
+        {
+            char        arg[ MAX_ARG_VAL_SIZE ];
+            int         length = 0;
+            callOnArg( callbacks->onDecoratorArgument, arg, length );
+            return staticMethod;
+        }
+        #endif
+
         node *      child;
         for ( int  k = 0; k < argsNode->n_nchildren; ++k )
         {
@@ -1346,7 +1453,7 @@ static void processAssign( node *              tree,
     for ( int  k = 0; k < tree->n_nchildren; ++k )
     {
         child = & ( tree->n_child[ k ] );
-        #if PY_MAJOR_VERSION == 3 && PY_MINOR_VERSION == 8
+        #if PY_MAJOR_VERSION == 3 && (PY_MINOR_VERSION == 8 || PY_MINOR_VERSION == 9)
         if ( child->n_type == namedexpr_test ||
              child->n_type == test )
         #else
@@ -1411,7 +1518,7 @@ static void processInstanceMember( node *                      tree,
     for ( int  k = 0; k < n; ++k )
     {
         child = & ( tree->n_child[ k ] );
-        #if PY_MAJOR_VERSION == 3 && PY_MINOR_VERSION == 8
+        #if PY_MAJOR_VERSION == 3 && (PY_MINOR_VERSION == 8 || PY_MINOR_VERSION == 9)
         if ( child->n_type == namedexpr_test ||
              child->n_type == test )
         #else

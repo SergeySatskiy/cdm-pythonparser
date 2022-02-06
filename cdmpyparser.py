@@ -194,6 +194,13 @@ class InstanceAttribute(ModuleInfoBase):
                self.name + "'"
 
 
+# Note: the decorators could have variations in terms of arguments.
+# case 1: decor
+#         in this case self.arguments == None
+# case 2: decor()
+#         in this case self.arguments == []
+# case 3: decor(12)
+#         in this case self.arguments == ['12']
 class Decorator(ModuleInfoBase):
 
     """Holds information about a class/function decorator"""
@@ -202,12 +209,12 @@ class Decorator(ModuleInfoBase):
 
     def __init__(self, decorName, line, pos, absPosition):
         ModuleInfoBase.__init__(self, decorName, line, pos, absPosition)
-        self.arguments = []
+        self.arguments = None
 
     def __str__(self):
         val = "Decorator[" + self._getLPA() + "]: '" + self.name
-        if self.arguments:
-            val += "( "
+        if self.arguments is not None:
+            val += "("
             first = True
             for item in self.arguments:
                 if first:
@@ -215,14 +222,14 @@ class Decorator(ModuleInfoBase):
                     first = False
                 else:
                     val += ", " + item
-            val += " )"
+            val += ")"
         val += "'"
         return val
 
     def getDisplayName(self):
         """Provides a name for display purpose"""
         displayName = self.name
-        if self.arguments:
+        if self.arguments is not None:
             displayName += "(" + ", ".join(self.arguments) + ")"
         return displayName
 
@@ -263,7 +270,7 @@ class Argument:
         if self.annotation is not None:
             output += ': ' + self.annotation
         if self.value is not None:
-            output += ' = ' + self.value
+            output += '=' + self.value
         return output
 
 
@@ -575,7 +582,10 @@ class BriefModuleInfo:
 
     def _onDecoratorArgument(self, name):
         """Memorizes a decorator argument"""
-        self.__lastDecorators[-1].arguments.append(name)
+        if self.__lastDecorators[-1].arguments is None:
+            self.__lastDecorators[-1].arguments = [name]
+        else:
+            self.__lastDecorators[-1].arguments.append(name)
 
     def _onDocstring(self, docstr, startLine, endLine):
         """Memorizes a function/class/module docstring"""
