@@ -1,3 +1,16 @@
+2022 Feb 06 Sergey Satskiy <sergey.satskiy@gmail.com>
+
+* Release 3.3.0
+* Python 3.9 support
+* Bug fix: properly NULL terminated string to compare for static method
+  decorator
+* Be more PEP8 compliant with the argument names
+* API change: now the decorators may have the 'arguments' member set to None
+  - case 1: decor
+    arguments will be None
+  - case 2: decor()
+    arguments will be []
+
 2020 Apr 07 Sergey Satskiy <sergey.satskiy@gmail.com>
 
 * Release 3.2.1
