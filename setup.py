@@ -2,7 +2,7 @@
 #
 # cdm-pythonparser - python 2 content parser used in Codimension to provide
 # a structured view into python 2 files and character buffers
-# Copyright (C) 2010-2017 Sergey Satskiy <sergey.satskiy@gmail.com>
+# Copyright (C) 2010-2022 Sergey Satskiy <sergey.satskiy@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by

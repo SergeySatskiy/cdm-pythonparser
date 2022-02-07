@@ -1,5 +1,10 @@
 2022 Feb 06 Sergey Satskiy <sergey.satskiy@gmail.com>
 
+* Release 3.3.1
+* Fix the package description
+
+2022 Feb 06 Sergey Satskiy <sergey.satskiy@gmail.com>
+
 * Release 3.3.0
 * Python 3.9 support
 * Bug fix: properly NULL terminated string to compare for static method

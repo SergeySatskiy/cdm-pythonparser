@@ -10,7 +10,7 @@ content of an arbitrary python code and for some other features however, it coul
 which need a python code retrospection.
 
 ## Python 3 Installation and Building
-The [master branch](https://github.com/SergeySatskiy/cdm-pythonparser) on github contains code for Python 3 (3.5/3.6/3.7/3.8 grammar is covered).
+The [master branch](https://github.com/SergeySatskiy/cdm-pythonparser) on github contains code for Python 3 (3.5/3.6/3.7/3.8/3.9 grammar is covered).
 
 The module can be installed using pip:
 
@@ -65,7 +65,7 @@ Base class: 'BaseClass'
 Docstring[8]: 'Class docstring'
     Function[10:5:10:9:129:10:22]: 'getValue'
     Argument: 'arg'
-    Decorator[9:6:108]: 'staticmethod
+    Decorator[9:6:108]: 'staticmethod'
     Docstring[11]: 'Method docstring'
 >>> len(c.imports)
 1
@@ -140,7 +140,7 @@ Base class: 'BaseClass'
 Docstring[8]: 'Class docstring'
     Function[10:5:10:9:129:10:22]: 'getValue'
     Argument: 'arg'
-    Decorator[9:6:108]: 'staticmethod
+    Decorator[9:6:108]: 'staticmethod'
     Docstring[11]: 'Method docstring'
 >>> len(c.imports)
 1
